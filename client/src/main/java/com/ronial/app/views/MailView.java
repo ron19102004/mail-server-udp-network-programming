@@ -19,7 +19,7 @@ public class MailView extends JFrame {
     private JEditorPane emailContent;
     private JMenuBar menuBar;
     private JMenu menuOptions;
-    private JMenuItem newEmailItem, refreshItem, deleteMail, replyMail, transferMail;
+    private JMenuItem newEmailItem, refreshItem, deleteMail, replyMail, transferMail, logout;
     private List<Email> emails;
     private MailService mailService;
 
@@ -44,6 +44,7 @@ public class MailView extends JFrame {
         deleteMail = new JMenuItem("❌ Xóa mail hiện tại");
         replyMail = new JMenuItem("📝 Trả lời mail hiện tại");
         transferMail= new JMenuItem("🚚 Chuyển tiếp mail hiện tại");
+        logout = new JMenuItem("☠️ Đăng xuất");
 
 
         newEmailItem.setBackground(new Color(0, 150, 136));
@@ -56,6 +57,8 @@ public class MailView extends JFrame {
         replyMail.setForeground(Color.WHITE);
         transferMail.setBackground(new Color(0, 150, 136));
         transferMail.setForeground(Color.WHITE);
+        logout.setBackground(new Color(0, 150, 136));
+        logout.setForeground(Color.WHITE);
 
 
 
@@ -64,6 +67,7 @@ public class MailView extends JFrame {
         menuOptions.add(deleteMail);
         menuOptions.add(replyMail);
         menuOptions.add(transferMail);
+        menuOptions.add(logout);
         menuBar.add(menuOptions);
         setJMenuBar(menuBar);
 
@@ -123,7 +127,10 @@ public class MailView extends JFrame {
                 Toast.error(ex.getMessage());
             }
         });
-
+        logout.addActionListener(e -> {
+            dispose();
+            MailLaunch.launch();
+        });
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.CENTER);
 
@@ -169,6 +176,11 @@ public class MailView extends JFrame {
         if (selectedEmailIndex > -1) {
             Email email = emails.get(selectedEmailIndex);
             emailContent.setText(email.getContentHtml());
+            try {
+                mailService.readMail(this,email);
+            } catch (IOException e) {
+                System.out.println(e);
+            }
         }
     }
 

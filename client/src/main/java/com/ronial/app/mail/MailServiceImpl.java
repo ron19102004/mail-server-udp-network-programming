@@ -68,7 +68,9 @@ public class MailServiceImpl implements MailService {
         email.setSubject(view.subjectField.getText().trim());
         email.setBody(view.messageArea.getText().trim());
         email.setLinks(view.attachLink.getText().trim());
+        email.setIsSeen(false);
 
+        System.out.println(email.toJSON());
         request.getData()
                 .put("email", email.toJSON());
         client.sendRequest(request);
@@ -76,6 +78,7 @@ public class MailServiceImpl implements MailService {
         if (response.isSuccess()) {
             Toast.info(response.getMessage());
             view.mailView.getEmailContent().setText("");
+            view.mailView.refreshInbox();
             view.dispose();
         } else {
             Toast.error(response.getMessage());
@@ -96,7 +99,7 @@ public class MailServiceImpl implements MailService {
             jsonArray.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
                 emails.add(email);
-                view.getEmailListModel().addElement("☺️" + email.getSubject());
+                view.getEmailListModel().addElement("☺️" + (email.isSeen() ? "" : "(Chưa đọc)") + email.getSubject());
             });
             view.setEmails(emails);
         } else {
@@ -138,6 +141,7 @@ public class MailServiceImpl implements MailService {
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
             Toast.info(response.getMessage());
+            view.mailView.refreshInbox();
             view.dispose();
         } else {
             Toast.error(response.getMessage());
@@ -147,7 +151,8 @@ public class MailServiceImpl implements MailService {
     @Override
     public void transferMail(TransferMailView view) throws IOException {
         Request request = new Request(CommandType.TRANSFER_MAIL);
-        request.getData().put("email", view.email.toJSON())
+        request.getData()
+                .put("email", view.email.toJSON())
                 .put("emails", view.emailsField.getText().trim())
                 .put("transferFrom", view.mailView.getUser().getEmail());
         client.sendRequest(request);
@@ -158,5 +163,14 @@ public class MailServiceImpl implements MailService {
         } else {
             Toast.error(response.getMessage());
         }
+    }
+
+    @Override
+    public void readMail(MailView view, Email email) throws IOException {
+        Request request = new Request(CommandType.READ_MAIL);
+        request.getData()
+                .put("email", view.getUser().getEmail())
+                .put("id", email.getId());
+        client.sendRequest(request);
     }
 }

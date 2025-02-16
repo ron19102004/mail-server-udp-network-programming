@@ -22,7 +22,7 @@ public class Client implements Context {
         socket.send(packet);
     }
     public Response receiveResponse() throws IOException {
-        byte[] buffer = new byte[51200];
+        byte[] buffer = new byte[102400000];
         DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
         socket.receive(packet);
         return Response.fromDatagramPacket(packet);

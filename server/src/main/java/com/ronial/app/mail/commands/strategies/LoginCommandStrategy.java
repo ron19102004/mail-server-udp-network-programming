@@ -22,11 +22,10 @@ public class LoginCommandStrategy implements Command {
 
     @Override
     public void execute(Server server, Request request) throws IOException {
-        StringBuilder builder = new StringBuilder();
-        log(request.toHostPortString() + " - Login started!");
-
         String password = request.getData().getString("password");
         String email = request.getData().getString("email");
+
+        log(request.toHostPortString() +  ":" + email + " - Login started!");
 
         Response response = new Response(true);
         try {

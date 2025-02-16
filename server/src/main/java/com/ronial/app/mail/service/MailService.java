@@ -16,4 +16,5 @@ public interface MailService extends Context {
     void deleteEmail(String email,long id) throws RepositoryException;
     void replyEmail(Email email) throws RepositoryException;
     void transferMail(String[] emails ,Email email) throws RepositoryException;
+    void readMail(String userEmail, long mailId) throws RepositoryException;
 }

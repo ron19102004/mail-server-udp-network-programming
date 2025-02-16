@@ -18,15 +18,18 @@ public class DeleteMailCommandStrategy implements Command {
     public DeleteMailCommandStrategy() {
         mailService = ContextProvider.get(MailService.class);
     }
+
     private void log(Object log) {
         ContextProvider.<LogFrame>get(LogFrame.class)
                 .addLog(DeleteMailCommandStrategy.class, log);
     }
+
     @Override
     public void execute(Server server, Request request) throws IOException {
-        log(request.toHostPortString() + "- Delete mail started!");
         String email = request.getData().getString("email");
         long id = request.getData().getLong("id");
+
+        log(request.toHostPortString() + ":" + email + " - Delete mail : " + id);
 
         Response response = new Response(true);
         try {

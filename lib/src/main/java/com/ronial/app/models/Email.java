@@ -10,8 +10,20 @@ public class Email {
     private String body;
     private String links;
     private String contentHtml;
-    public Email() {}
-    public Email(long id, String from, String to, String subject, String body, String links, String contentHtml) {
+    private boolean seen;
+
+    public Email() {
+        id = 0;
+        from = "";
+        to = "";
+        subject = "";
+        body = "";
+        links = "";
+        seen = false;
+        contentHtml = "";
+    }
+
+    public Email(long id, String from, String to, String subject, String body, String links, String contentHtml, boolean isSeen) {
         this.from = from;
         this.id = id;
         this.to = to;
@@ -19,6 +31,7 @@ public class Email {
         this.body = body;
         this.links = links;
         this.contentHtml = contentHtml;
+        this.seen = isSeen;
     }
 
     public static Email fromJSON(String json) {
@@ -30,8 +43,10 @@ public class Email {
         String body = obj.getString("body");
         String links = obj.getString("links");
         String contentHtml = obj.getString("contentHtml");
-        return new Email(id, from, to, subject, body, links, contentHtml);
+        boolean isSeen = obj.getBoolean("seen");
+        return new Email(id, from, to, subject, body, links, contentHtml, isSeen);
     }
+
     public String toJSON() {
         JSONObject obj = new JSONObject();
         obj.put("id", id);
@@ -41,8 +56,10 @@ public class Email {
         obj.put("body", body);
         obj.put("links", links);
         obj.put("contentHtml", contentHtml);
+        obj.put("seen", seen);
         return obj.toString();
     }
+
     public long getId() {
         return id;
     }
@@ -97,5 +114,13 @@ public class Email {
 
     public void setContentHtml(String contentHtml) {
         this.contentHtml = contentHtml;
+    }
+
+    public void setIsSeen(boolean isSeen) {
+        this.seen = isSeen;
+    }
+
+    public boolean isSeen() {
+        return seen;
     }
 }

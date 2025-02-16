@@ -1,5 +1,6 @@
 package com.ronial.app.mail.commands;
 
+import com.ronial.app.mail.CommandType;
 import com.ronial.app.mail.Server;
 import com.ronial.app.mail.commands.strategies.*;
 import com.ronial.app.models.Request;
@@ -23,6 +24,7 @@ public class CommandExecutor {
         putCommand(CommandType.DELETE_MAIL, DeleteMailCommandStrategy.class);
         putCommand(CommandType.REPLY_MAIL, ReplyMailCommandStrategy.class);
         putCommand(CommandType.TRANSFER_MAIL, TransferMailCommandStrategy.class);
+        putCommand(CommandType.READ_MAIL, ReadMailCommandStrategy.class);
     }
 
     private void putCommand(CommandType type, Class<? extends Command> command) {

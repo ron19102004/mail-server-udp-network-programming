@@ -32,7 +32,7 @@ public class Server implements Context {
     private Server(int port) throws IOException {
         this.isRunning = true;
         this.serverSocket = new DatagramSocket(port);
-        byte[] buffer = new byte[51200];
+        byte[] buffer = new byte[102400000];
         CommandExecutor commandExecutor = new CommandExecutor(this);
         new Thread(() -> {
             try {

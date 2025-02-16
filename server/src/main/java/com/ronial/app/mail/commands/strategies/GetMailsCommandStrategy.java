@@ -23,9 +23,8 @@ public class GetMailsCommandStrategy implements Command {
 
     @Override
     public void execute(Server server, Request request) throws IOException {
-        log(request.toHostPortString() + " - Get mails started!");
-
         String email = request.getData().getString("email");
+        log(request.toHostPortString() + ":" + email + " - Get mails started!");
 
         Response response = new Response(true);
         try {
@@ -42,6 +41,7 @@ public class GetMailsCommandStrategy implements Command {
             server.sendResponse(response, request.getPacket());
         }
     }
+
     private void log(Object log) {
         ContextProvider.<LogFrame>get(LogFrame.class)
                 .addLog(GetMailsCommandStrategy.class, log);

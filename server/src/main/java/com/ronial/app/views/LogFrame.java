@@ -1,10 +1,13 @@
 package com.ronial.app.views;
+
 import com.ronial.app.context.Context;
 import com.ronial.app.mail.Server;
+import com.ronial.app.utils.DateUtils;
 import com.ronial.app.views.components.ButtonComponent;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.Instant;
 import java.util.Objects;
 
 public class LogFrame extends JFrame implements Context {
@@ -14,7 +17,7 @@ public class LogFrame extends JFrame implements Context {
 
     public LogFrame() {
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
-        setTitle("Server Control Panel");
+        setTitle("Ya-mail Server Control Panel");
         setSize(1000, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -46,7 +49,8 @@ public class LogFrame extends JFrame implements Context {
     }
 
     public void addLog(Class<?> clazz, Object log) {
-        logArea.append(clazz.getSimpleName() + " ==> " + log.toString() + "\n");
+        String time = "[" + DateUtils.formatInstant(Instant.now()) + "]" + "***" + clazz.getSimpleName() + " ==> " + log.toString() + "\n";
+        logArea.append(time);
         logArea.setCaretPosition(logArea.getDocument().getLength()); // Tự động cuộn xuống cuối
     }
 }

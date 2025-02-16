@@ -1,6 +1,6 @@
 package com.ronial.app.models;
 
-import com.ronial.app.mail.commands.CommandType;
+import com.ronial.app.mail.CommandType;
 import org.json.JSONObject;
 
 import java.net.DatagramPacket;

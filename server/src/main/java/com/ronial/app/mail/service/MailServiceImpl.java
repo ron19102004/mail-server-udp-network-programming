@@ -94,14 +94,14 @@ public class MailServiceImpl implements MailService {
         final String senderFolder = MAIL_FOLDER_NAME + "/" + email.getFrom();
         final String senderBoxFilePath = senderFolder + "/inbox/" + email.getId() + ".txt";
         try {
-            byte[] buffer = email
-                    .toJSON()
-                    .getBytes(StandardCharsets.UTF_8);
-
             Arrays.stream(email.getTo().split(",")).forEach(to -> {
                 saveEmailItem(to.trim(), email);
             });
 
+            email.setIsSeen(true);
+            byte[] buffer = email
+                    .toJSON()
+                    .getBytes(StandardCharsets.UTF_8);
             FileOutputStream senderOut = new FileOutputStream(senderBoxFilePath);
             senderOut.write(buffer);
             senderOut.close();
@@ -112,7 +112,7 @@ public class MailServiceImpl implements MailService {
         }
     }
 
-    private void saveEmailItem(String to, Email email) throws RepositoryException {
+    private void saveEmailItem(String to,final Email email) throws RepositoryException {
         final String receiverFolder = MAIL_FOLDER_NAME + "/" + to;
         File file = new File(receiverFolder);
         if (!file.exists()) {
@@ -223,6 +223,7 @@ public class MailServiceImpl implements MailService {
         String emailOther = emailDb.getFrom().equals(email.getFrom()) ? emailDb.getTo() : emailDb.getFrom();
         try {
             Email emailOtherDb = getEmail(emailOther, email.getId());
+            emailOtherDb.setIsSeen(false);
             emailOtherDb.setContentHtml(contentHtml);
 
             String path = MAIL_FOLDER_NAME + "/" + emailOther + "/inbox/" + email.getId() + ".txt";
@@ -237,6 +238,7 @@ public class MailServiceImpl implements MailService {
                 String path = MAIL_FOLDER_NAME + "/" + emailOther + "/inbox/" + email.getId() + ".txt";
                 try {
                     FileOutputStream out = new FileOutputStream(path);
+                    emailDb.setIsSeen(false);
                     byte[] buffer = emailDb.toJSON().getBytes(StandardCharsets.UTF_8);
                     out.write(buffer);
                     out.close();
@@ -250,6 +252,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void transferMail(String[] emails, Email email) throws RepositoryException {
+        email.setIsSeen(false);
         Arrays.stream(emails).forEach(name -> {
             try {
                 transferMailItem(name.trim(), email);
@@ -258,6 +261,25 @@ public class MailServiceImpl implements MailService {
                         .addLog(MailServiceImpl.class, e.getMessage());
             }
         });
+    }
+
+    @Override
+    public void readMail(String userEmail, long mailId) throws RepositoryException {
+        Email email = getEmail(userEmail, mailId);
+        if (email.isSeen()) return;
+        email.setIsSeen(true);
+        try {
+            String path = MAIL_FOLDER_NAME + "/" + userEmail + "/inbox/" + mailId + ".txt";
+            FileOutputStream out = new FileOutputStream(path, false);// append: false để ghi đè
+            byte[] buffer = email
+                    .toJSON()
+                    .getBytes(StandardCharsets.UTF_8);
+            out.write(buffer);
+            out.close();
+        } catch (IOException e) {
+            ContextProvider.<LogFrame>get(LogFrame.class)
+                    .addLog(MailServiceImpl.class, e.getMessage());
+        }
     }
 
     private void transferMailItem(String emailName, Email email) {

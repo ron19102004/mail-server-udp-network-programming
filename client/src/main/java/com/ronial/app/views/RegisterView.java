@@ -23,7 +23,7 @@ public class RegisterView extends JFrame {
     public RegisterView() {
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
         this.mailService = ContextProvider.get(MailService.class);
-        setTitle("Đăng ký Email");
+        setTitle("Đăng ký Ya-mail");
         setSize(420, 350);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -33,7 +33,7 @@ public class RegisterView extends JFrame {
         panel.setLayout(null);
         panel.setBackground(Color.WHITE);
 
-        JLabel titleLabel = new JLabel("ĐĂNG KÝ EMAIL", JLabel.CENTER);
+        JLabel titleLabel = new JLabel("ĐĂNG KÝ YA-MAIL", JLabel.CENTER);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
         titleLabel.setForeground(new Color(0, 102, 204));
         titleLabel.setBounds(100, 20, 220, 30);

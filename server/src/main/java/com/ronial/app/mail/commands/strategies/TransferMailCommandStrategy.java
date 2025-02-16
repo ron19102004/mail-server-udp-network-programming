@@ -29,10 +29,20 @@ public class TransferMailCommandStrategy implements Command {
         log(request.toHostPortString() + " - Transfer mail started!");
 
         String emailJson = request.getData().getString("email");
-        Email email = Email.fromJSON(emailJson);
-        String[] emails = request.getData().getString("emails").split(",");
-        email.setContentHtml(toContentHtml(request.getData().getString("transferFrom"), email));
+        String emailsJson = request.getData().getString("emails");
+        String transferFrom  = request.getData().getString("transferFrom");
+
         Response response = new Response(true);
+        if (emailJson.contains(transferFrom)){
+            response.setSuccess(false)
+                    .setMessage("Không thể chuyển tiếp mail cho chính mình!");
+            server.sendResponse(response, request.getPacket());
+            return;
+        }
+
+        Email email = Email.fromJSON(emailJson);
+        String[] emails = emailsJson.split(",");
+        email.setContentHtml(toContentHtml(transferFrom, email));
         try {
             mailService.transferMail(emails, email);
             response.setMessage("Chuyển tiếp mail thành công 😊");
@@ -48,7 +58,8 @@ public class TransferMailCommandStrategy implements Command {
 
     private String toContentHtml(String transferFrom, Email email) {
         StringBuilder html = new StringBuilder();
-        html.append("<h2 style='color: blue;font-size: 14px'>🚚 Chuyển tiếp từ: <span id='emailFrom'>")
+        html
+                .append("<h2 style='color: blue;font-size: 14px'>🚚 Chuyển tiếp từ: <span id='emailFrom'>")
                 .append(transferFrom).append("</span></h2>")
                 .append("<hr>").append(email.getContentHtml());
         return html.toString();

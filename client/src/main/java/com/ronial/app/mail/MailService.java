@@ -1,6 +1,7 @@
 package com.ronial.app.mail;
 
 import com.ronial.app.context.Context;
+import com.ronial.app.models.Email;
 import com.ronial.app.views.*;
 
 import java.io.IOException;
@@ -13,4 +14,5 @@ public interface MailService extends Context {
     void deleteMail(MailView view) throws IOException;
     void replyMail(ReplyMailView view) throws IOException;
     void transferMail(TransferMailView view) throws IOException;
+    void readMail(MailView view, Email email) throws IOException;
 }

@@ -27,14 +27,21 @@ public class SendMailCommandStrategy implements Command {
     @Override
     public void execute(Server server, Request request) throws IOException {
         Instant time = Instant.now();
-        log(request.toHostPortString() + " - Send mail started!");
-
         String emailJson = request.getData().getString("email");
         Email email = Email.fromJSON(emailJson);
+        log(request.toHostPortString() + ":" + email.getFrom() + " - Send mail started!");
+
         email.setId(time.toEpochMilli());
-        logSendMail(request.toHostPortString(),email);
+        logSendMail(request.toHostPortString(), email);
 
         Response response = new Response(true);
+        if (email.getTo().contains(email.getFrom())) {
+            response.setSuccess(false)
+                    .setMessage("Không thể tự gửi mail cho chính mình!");
+            server.sendResponse(response, request.getPacket());
+            return;
+        }
+
         List<String> links = !email.getLinks().trim().isEmpty() ?
                 Arrays.stream(email.getLinks().split(";")).toList() : List.of();
 
@@ -60,18 +67,21 @@ public class SendMailCommandStrategy implements Command {
             server.sendResponse(response, request.getPacket());
         }
     }
-    private void logSendMail(String hostPort,Email email){
+
+    private void logSendMail(String hostPort, Email email) {
         log(hostPort + "#FROM: " + email.getFrom());
         log(hostPort + "#TO: " + email.getTo());
         log(hostPort + "#SUBJECT: " + email.getSubject());
         log(hostPort + "#BODY: " + email.getBody());
         log(hostPort + "#LINKS: " + email.getLinks());
     }
-    private void log(Object log){
+
+    private void log(Object log) {
         ContextProvider.<LogFrame>get(LogFrame.class)
                 .addLog(SendMailCommandStrategy.class, log);
     }
-    private String toContentHtml(String to,String from, String time,
+
+    private String toContentHtml(String to, String from, String time,
                                  String subject,
                                  String body,
                                  List<String> links) {
