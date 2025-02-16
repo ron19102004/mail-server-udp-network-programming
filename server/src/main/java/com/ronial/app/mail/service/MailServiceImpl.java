@@ -91,14 +91,36 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void saveEmail(Email email) throws RepositoryException {
-        final String receiverFolder = MAIL_FOLDER_NAME + "/" + email.getTo();
         final String senderFolder = MAIL_FOLDER_NAME + "/" + email.getFrom();
+        final String senderBoxFilePath = senderFolder + "/inbox/" + email.getId() + ".txt";
+        try {
+            byte[] buffer = email
+                    .toJSON()
+                    .getBytes(StandardCharsets.UTF_8);
+
+            Arrays.stream(email.getTo().split(",")).forEach(to -> {
+                saveEmailItem(to.trim(), email);
+            });
+
+            FileOutputStream senderOut = new FileOutputStream(senderBoxFilePath);
+            senderOut.write(buffer);
+            senderOut.close();
+        } catch (IOException e) {
+            ContextProvider.<LogFrame>get(LogFrame.class)
+                    .addLog(MailServiceImpl.class, e.getMessage());
+            throw new RepositoryException("System error");
+        }
+    }
+
+    private void saveEmailItem(String to, Email email) throws RepositoryException {
+        final String receiverFolder = MAIL_FOLDER_NAME + "/" + to;
         File file = new File(receiverFolder);
         if (!file.exists()) {
-            throw new RepositoryException(email.getTo() + " does not exist");
+            ContextProvider.<LogFrame>get(LogFrame.class)
+                    .addLog(MailServiceImpl.class, email.getTo() + " does not exist");
+            return;
         }
         final String receiverBoxFilePath = receiverFolder + "/inbox/" + email.getId() + ".txt";
-        final String senderBoxFilePath = senderFolder + "/inbox/" + email.getId() + ".txt";
         try {
             byte[] buffer = email
                     .toJSON()
@@ -108,13 +130,9 @@ public class MailServiceImpl implements MailService {
             receiverOut.write(buffer);
             receiverOut.close();
 
-            FileOutputStream senderOut = new FileOutputStream(senderBoxFilePath);
-            senderOut.write(buffer);
-            senderOut.close();
         } catch (IOException e) {
             ContextProvider.<LogFrame>get(LogFrame.class)
                     .addLog(MailServiceImpl.class, e.getMessage());
-            throw new RepositoryException("System error");
         }
     }
 
@@ -234,7 +252,7 @@ public class MailServiceImpl implements MailService {
     public void transferMail(String[] emails, Email email) throws RepositoryException {
         Arrays.stream(emails).forEach(name -> {
             try {
-                transferMailItem(name, email);
+                transferMailItem(name.trim(), email);
             } catch (RepositoryException e) {
                 ContextProvider.<LogFrame>get(LogFrame.class)
                         .addLog(MailServiceImpl.class, e.getMessage());

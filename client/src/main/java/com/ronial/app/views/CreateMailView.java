@@ -21,7 +21,7 @@ public class CreateMailView extends JFrame {
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
         this.mailView = mailView;
         MailService mailService = ContextProvider.get(MailService.class);
-        setTitle("Soạn mail");
+        setTitle("Soạn mail - " + mailView.getUser().getEmail());
         setSize(800, 600);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
@@ -46,7 +46,7 @@ public class CreateMailView extends JFrame {
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
 
-        composePanel.add(new JLabel("Đến:"));
+        composePanel.add(new JLabel("Đến(Sử dụng dấu , để tách mail):"));
         composePanel.add(recipientField);
 
         composePanel.add(new JLabel("Tiêu đề:"));

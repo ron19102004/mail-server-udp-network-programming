@@ -35,12 +35,6 @@ public class SendMailCommandStrategy implements Command {
         logSendMail(request.toHostPortString(),email);
 
         Response response = new Response(true);
-        if (!RegexUtils.isEmail(email.getTo())){
-            response.setSuccess(false)
-                    .setMessage("Mail phải có dạng example@ronial.ya");
-            server.sendResponse(response, request.getPacket());
-            return;
-        }
         List<String> links = !email.getLinks().trim().isEmpty() ?
                 Arrays.stream(email.getLinks().split(";")).toList() : List.of();
 
@@ -83,12 +77,12 @@ public class SendMailCommandStrategy implements Command {
                                  List<String> links) {
         StringBuilder html = new StringBuilder();
         html
-                .append("<h2 style='color: #00897B;'>✉️ Nội dung từ: <span id='emailFrom'>").append(from).append("</span></h2>")
-                .append("<h2 style='color: #00897B;'>✉️ Nội dung đến: <span id='emailFrom'>").append(to).append("</span></h2>")
+                .append("<h3 style='color: red;font-size: 14px'>✉️ Nội dung từ: <span id='emailFrom'>").append(from).append("</span></h3>")
+                .append("<h3 style='color: #00897B;font-size: 14px'>✉️ Nội dung đến: <span id='emailFrom'>").append(to).append("</span></h3>")
                 .append("<p style='font-size: 12px; color: gray; margin-top: -10px; margin-bottom: 15px;'>🕒 Gửi lúc: <span id='emailTime'>")
                 .append(time).append("</span></p>")
-                .append("<p><span style='color: #00897B; font-weight: bold;'>Tiêu đề</span>: ").append(subject).append("</p>")
-                .append("<p><span style='color: #00897B; font-weight: bold;'>Nội dung:</span></p>")
+                .append("<p><span style='color: #00897B; font-weight: bold;font-size: 14px'>Tiêu đề</span>: ").append(subject).append("</p>")
+                .append("<p><span style='color: #00897B; font-weight: bold;font-size: 14px'>Nội dung:</span></p>")
                 .append("<p style='font-size: 14px; color: #333;'>").append(body).append("</p>");
 
         if (links != null && !links.isEmpty()) {

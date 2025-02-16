@@ -5,7 +5,7 @@ import com.ronial.app.models.Request;
 
 import java.io.IOException;
 
-
+@FunctionalInterface
 public interface Command {
     void execute(Server server, Request request) throws IOException;
 }

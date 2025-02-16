@@ -1,5 +1,7 @@
 package com.ronial.app;
 
+import com.ronial.app.conf.ConfigManagement;
+import com.ronial.app.conf.ConfigManagementImpl;
 import com.ronial.app.context.ContextProvider;
 import com.ronial.app.mail.Server;
 import com.ronial.app.mail.service.MailService;
@@ -24,6 +26,9 @@ public class MailServerApplication {
         }
     }
     public static void main(String[] args) throws IOException {
+        ConfigManagement configManagement = new ConfigManagementImpl();
+        ContextProvider.register(ConfigManagement.class, configManagement);
+
         LogFrame logFrame = new LogFrame();
         ContextProvider.register(LogFrame.class,logFrame);
 
@@ -33,7 +38,8 @@ public class MailServerApplication {
         MailService mailService = new MailServiceImpl();
         ContextProvider.register(MailService.class, mailService);
 
-        Server server = new Server(2000);
+        Server server = Server.launch();
         ContextProvider.register(Server.class,server);
+
     }
 }

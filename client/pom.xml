@@ -15,9 +15,9 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20250107</version>
+            <groupId>com.ronial.app</groupId>
+            <artifactId>lib</artifactId>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 

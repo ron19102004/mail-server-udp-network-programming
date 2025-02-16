@@ -11,7 +11,6 @@ import com.ronial.app.models.Response;
 import com.ronial.app.views.LogFrame;
 
 import java.io.IOException;
-import java.util.List;
 
 public class TransferMailCommandStrategy implements Command {
     private final MailService mailService;
@@ -49,7 +48,7 @@ public class TransferMailCommandStrategy implements Command {
 
     private String toContentHtml(String transferFrom, Email email) {
         StringBuilder html = new StringBuilder();
-        html.append("<h2 style='color: #00897B;'>✉️ Chuyển tiếp từ: <span id='emailFrom'>")
+        html.append("<h2 style='color: blue;font-size: 14px'>🚚 Chuyển tiếp từ: <span id='emailFrom'>")
                 .append(transferFrom).append("</span></h2>")
                 .append("<hr>").append(email.getContentHtml());
         return html.toString();
