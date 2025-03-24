@@ -1,300 +1,176 @@
 package com.ronial.app.mail.service;
 
-import com.ronial.app.MailServerApplication;
 import com.ronial.app.context.ContextProvider;
-import com.ronial.app.exceptions.RepositoryException;
+import com.ronial.app.exceptions.ServiceException;
+import com.ronial.app.infrastructure.mail.SessionMailer;
+import com.ronial.app.mail.MailHtmlFormat;
 import com.ronial.app.models.Email;
 import com.ronial.app.models.User;
+import com.ronial.app.repositories.EmailRepository;
+import com.ronial.app.repositories.UserRepository;
 import com.ronial.app.security.RSASecurity;
+import com.ronial.app.utils.DateUtils;
 import com.ronial.app.views.LogFrame;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import java.sql.SQLException;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MailServiceImpl implements MailService {
-    private final String MAIL_FOLDER_NAME;
     private final RSASecurity security;
+    private final UserRepository userRepository;
+    private final SessionMailer sessionMailer;
+    private final EmailRepository emailRepository;
 
     public MailServiceImpl() {
-        MAIL_FOLDER_NAME = MailServerApplication.MAIL_FOLDER_NAME;
         security = ContextProvider.get(RSASecurity.class);
+        userRepository = ContextProvider.get(UserRepository.class);
+        sessionMailer = ContextProvider.get(SessionMailer.class);
+        emailRepository = ContextProvider.get(EmailRepository.class);
     }
 
     @Override
-    public void createMailAccount(String email, String password, String name) throws RepositoryException {
-        final String folder = MAIL_FOLDER_NAME + "/" + email;
-        final String accountPath = folder + "/account.txt";
-        File file = new File(folder);
-        if (file.exists()) {
-            throw new RepositoryException(email + " already exists");
-        }
-        if (!file.mkdirs()) {
-            throw new RepositoryException(email + " could not be created");
-        }
-        File inbox = new File(folder + "/inbox");
-        if (!inbox.exists()) {
-            inbox.mkdirs();
-        }
+    public void createMailAccount(User user) throws ServiceException {
         try {
-            User user = new User(name, email, password);
-            String passwordHash = security.encode(password);
+            String passwordHash = security.encode(user.getPassword());
             user.setPassword(passwordHash);
-            byte[] dataBytes = user.toJson().getBytes(StandardCharsets.UTF_8);
-            FileOutputStream out = new FileOutputStream(accountPath);
-            out.write(dataBytes);
-            out.close();
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException |
-                 IllegalBlockSizeException | BadPaddingException |
-                 InvalidKeyException | IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-            throw new RepositoryException("System error");
+            User userSaved = userRepository.save(user);
+            if (userSaved == null) {
+                throw new ServiceException("Could not save user");
+            }
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | IllegalBlockSizeException | InvalidKeyException |
+                 BadPaddingException e) {
+            throw new ServiceException(e.getMessage());
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public User loginMailAccount(String email, String password) throws RepositoryException {
-        final String folder = MAIL_FOLDER_NAME + "/" + email;
-        final String accountPath = folder + "/account.txt";
-        File file = new File(folder);
-        if (!file.exists()) {
-            throw new RepositoryException(email + " does not exist");
-        }
+    public User loginMailAccount(String email, String password) throws ServiceException {
         try {
-            FileInputStream in = new FileInputStream(accountPath);
-            byte[] buffer = in.readAllBytes();
-            in.close();
-            String data = new String(buffer, StandardCharsets.UTF_8);
-            User user = User.fromJson(data);
-            String passwordDecode = security.decode(user.getPassword());
-            if (!password.equals(passwordDecode)) {
-                throw new RepositoryException("Wrong password");
+            Optional<User> user = userRepository.findByEmail(email);
+            if (user.isEmpty()) {
+                throw new ServiceException("Invalid email");
             }
-            return user;
-        } catch (IOException | NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
+            String passwordDecode = security.decode(user.get().getPassword());
+            if (!password.equals(passwordDecode)) {
+                throw new ServiceException("Wrong password");
+            }
+            return user.get();
+
+        } catch (NoSuchPaddingException | IllegalBlockSizeException | NoSuchAlgorithmException |
                  BadPaddingException | InvalidKeyException e) {
             ContextProvider.<LogFrame>get(LogFrame.class)
                     .addLog(MailServiceImpl.class, e.getMessage());
-            throw new RepositoryException("System error");
+            throw new ServiceException("System error");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void saveEmail(Email email) throws RepositoryException {
-        final String senderFolder = MAIL_FOLDER_NAME + "/" + email.getFrom();
-        final String senderBoxFilePath = senderFolder + "/inbox/" + email.getId() + ".txt";
-        try {
-            Arrays.stream(email.getTo().split(",")).forEach(to -> {
-                saveEmailItem(to.trim(), email);
-            });
-
-            email.setIsSeen(true);
-            byte[] buffer = email
-                    .toJSON()
-                    .getBytes(StandardCharsets.UTF_8);
-            FileOutputStream senderOut = new FileOutputStream(senderBoxFilePath);
-            senderOut.write(buffer);
-            senderOut.close();
-        } catch (IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-            throw new RepositoryException("System error");
-        }
-    }
-
-    private void saveEmailItem(String to,final Email email) throws RepositoryException {
-        final String receiverFolder = MAIL_FOLDER_NAME + "/" + to;
-        File file = new File(receiverFolder);
-        if (!file.exists()) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, email.getTo() + " does not exist");
-            return;
-        }
-        final String receiverBoxFilePath = receiverFolder + "/inbox/" + email.getId() + ".txt";
-        try {
-            byte[] buffer = email
-                    .toJSON()
-                    .getBytes(StandardCharsets.UTF_8);
-
-            FileOutputStream receiverOut = new FileOutputStream(receiverBoxFilePath);
-            receiverOut.write(buffer);
-            receiverOut.close();
-
-        } catch (IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-        }
-    }
-
-    @Override
-    public Email getEmail(String email, long id) throws RepositoryException {
-        final String filePath = MAIL_FOLDER_NAME + "/" + email + "/inbox/" + id + ".txt";
-        File file = new File(filePath);
-        if (!file.exists()) {
-            throw new RepositoryException("Email: " + id + " does not exist");
-        }
-        try {
-            FileInputStream in = new FileInputStream(filePath);
-            byte[] buffer = in.readAllBytes();
-            in.close();
-            String data = new String(buffer, StandardCharsets.UTF_8);
-            return Email.fromJSON(data);
-        } catch (IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-            throw new RepositoryException("System error");
-        }
-    }
-
-    @Override
-    public List<Email> getEmails(String email) throws RepositoryException {
-        List<Email> emails = new ArrayList<>();
-        final String boxPath = MAIL_FOLDER_NAME + "/" + email + "/inbox";
-        File folder = new File(boxPath);
-        if (!folder.exists()) {
-            folder.mkdirs();
-        }
-        File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".txt"));
-        if (files != null && files.length > 0) {
-            for (File file : files) {
-                try {
-                    String content = new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())));
-                    Email emailDb = Email.fromJSON(content);
-                    emails.add(emailDb);
-                } catch (IOException e) {
-                    ContextProvider.<LogFrame>get(LogFrame.class)
-                            .addLog(MailServiceImpl.class, "Lỗi khi đọc file " + file.getName() + ": " + e.getMessage());
-                }
+    public void saveEmail(Email email) throws ServiceException {
+        StringBuilder errors = new StringBuilder();
+        List<String> recipients = Arrays.stream(email.getTo().split(",")).toList();
+        recipients.forEach(recipient -> {
+            try {
+                saveEmailItem(recipient, email);
+            } catch (ServiceException e) {
+                errors.append(e.getMessage()).append(",");
             }
-        }
-        emails.sort((mail1, mail2) -> {
-            if (mail1.getId() > mail2.getId()) {
-                return -1;
-            }
-            if (mail2.getId() > mail1.getId()) {
-                return 1;
-            }
-            return 0;
         });
-        return emails;
-    }
-
-    @Override
-    public void deleteEmail(String email, long id) throws RepositoryException {
-        final String boxPath = MAIL_FOLDER_NAME + "/" + email + "/inbox/" + id + ".txt";
-        File file = new File(boxPath);
-        if (!file.exists()) {
-            throw new RepositoryException("Email: " + id + " does not exist");
-        }
-        if (!file.delete()) {
-            throw new RepositoryException("System error");
-        }
-    }
-
-    @Override
-    public void replyEmail(Email email) throws RepositoryException {
-        Email emailDb = getEmail(email.getFrom(), email.getId());
-        String contentHtml = emailDb.getContentHtml() + email.getContentHtml();
-        emailDb.setContentHtml(contentHtml);
-
-        try {
-            String path = MAIL_FOLDER_NAME + "/" + email.getFrom() + "/inbox/" + email.getId() + ".txt";
-            FileOutputStream out = new FileOutputStream(path, false);
-            byte[] buffer = emailDb
-                    .toJSON()
-                    .getBytes(StandardCharsets.UTF_8);
-            out.write(buffer);
-            out.close();
-        } catch (IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-        }
-
-        String emailOther = emailDb.getFrom().equals(email.getFrom()) ? emailDb.getTo() : emailDb.getFrom();
-        try {
-            Email emailOtherDb = getEmail(emailOther, email.getId());
-            emailOtherDb.setIsSeen(false);
-            emailOtherDb.setContentHtml(contentHtml);
-
-            String path = MAIL_FOLDER_NAME + "/" + emailOther + "/inbox/" + email.getId() + ".txt";
-            FileOutputStream out = new FileOutputStream(path, false);
-            byte[] buffer = emailOtherDb.toJSON().getBytes(StandardCharsets.UTF_8);
-            out.write(buffer);
-            out.close();
-        } catch (RepositoryException | IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-            if (e.getMessage().contains("does not exist")) {
-                String path = MAIL_FOLDER_NAME + "/" + emailOther + "/inbox/" + email.getId() + ".txt";
+        if (!errors.isEmpty())
+            throw new ServiceException(errors.deleteCharAt(errors.length() - 1).toString());
+        email.setCreatedAt(DateUtils.formatInstant(Instant.now()));
+        new Thread(() -> {
+            recipients.forEach(recipient -> {
                 try {
-                    FileOutputStream out = new FileOutputStream(path);
-                    emailDb.setIsSeen(false);
-                    byte[] buffer = emailDb.toJSON().getBytes(StandardCharsets.UTF_8);
-                    out.write(buffer);
-                    out.close();
-                } catch (IOException ex) {
+                    Message message = new MimeMessage(sessionMailer.getSession());
+                    message.setFrom(new InternetAddress(email.getFrom()));
+                    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+                    message.setSubject(email.getSubject());
+                    message.setContent(MailHtmlFormat.toContentHtml(email), "text/html; charset=UTF-8");
+                    // Gửi email
+                    Transport.send(message);
+                } catch (MessagingException e) {
                     ContextProvider.<LogFrame>get(LogFrame.class)
                             .addLog(MailServiceImpl.class, e.getMessage());
                 }
+            });
+        }).start();
+    }
+
+    private void saveEmailItem(String to, final Email email) throws ServiceException {
+        try {
+            email.setTo(to.trim());
+            Email emailSaved = emailRepository.save(email);
+            if (emailSaved == null) {
+                throw new ServiceException("Could not save email");
             }
+        } catch (SQLException e) {
+            ContextProvider.<LogFrame>get(LogFrame.class)
+                    .addLog(MailServiceImpl.class, e.getMessage());
+            throw new ServiceException("Error saving email in SQL");
         }
     }
 
     @Override
-    public void transferMail(String[] emails, Email email) throws RepositoryException {
-        email.setIsSeen(false);
+    public void deleteEmail(String email, int id) throws ServiceException, SQLException {
+        Optional<Email> emailDb = emailRepository.findById(id);
+        if (emailDb.isEmpty()) {
+            throw new ServiceException("Email not found");
+        }
+        if (emailDb.get().getFrom().equals(email)) {
+            emailRepository.deleteEmailBySender(id);
+        } else {
+            emailRepository.deleteEmailByRecipient(id);
+        }
+    }
+
+    @Override
+    public void transferMail(String[] emails, Email email) throws ServiceException {
         Arrays.stream(emails).forEach(name -> {
             try {
-                transferMailItem(name.trim(), email);
-            } catch (RepositoryException e) {
+                email.setTo(name);
+                emailRepository.saveWithRemoveForSenderAndReceiver(email, true, false);
+            } catch (ServiceException | SQLException e) {
                 ContextProvider.<LogFrame>get(LogFrame.class)
                         .addLog(MailServiceImpl.class, e.getMessage());
             }
         });
+        new Thread(() -> {
+            Arrays.stream(emails).forEach(recipient -> {
+                try {
+                    Message message = new MimeMessage(sessionMailer.getSession());
+                    message.setFrom(new InternetAddress(email.getFrom()));
+                    message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(recipient));
+                    message.setSubject(email.getSubject());
+                    message.setContent(MailHtmlFormat.toContentHtml(email), "text/html; charset=UTF-8");
+                    // Gửi email
+                    Transport.send(message);
+                } catch (MessagingException e) {
+                    ContextProvider.<LogFrame>get(LogFrame.class)
+                            .addLog(MailServiceImpl.class, e.getMessage());
+                }
+            });
+        }).start();
     }
 
     @Override
-    public void readMail(String userEmail, long mailId) throws RepositoryException {
-        Email email = getEmail(userEmail, mailId);
-        if (email.isSeen()) return;
-        email.setIsSeen(true);
-        try {
-            String path = MAIL_FOLDER_NAME + "/" + userEmail + "/inbox/" + mailId + ".txt";
-            FileOutputStream out = new FileOutputStream(path, false);// append: false để ghi đè
-            byte[] buffer = email
-                    .toJSON()
-                    .getBytes(StandardCharsets.UTF_8);
-            out.write(buffer);
-            out.close();
-        } catch (IOException e) {
-            ContextProvider.<LogFrame>get(LogFrame.class)
-                    .addLog(MailServiceImpl.class, e.getMessage());
-        }
-    }
-
-    private void transferMailItem(String emailName, Email email) {
-        final String inboxPath = MAIL_FOLDER_NAME + "/" + emailName;
-        File folder = new File(inboxPath);
-        if (!folder.exists()) {
-            throw new RepositoryException("Email: " + emailName + " does not exist");
-        }
-        try {
-            FileOutputStream out = new FileOutputStream(inboxPath + "/inbox/" + email.getId() + ".txt");
-            byte[] buffer = email.toJSON().getBytes(StandardCharsets.UTF_8);
-            out.write(buffer);
-            out.close();
-        } catch (IOException e) {
-            throw new RepositoryException("System error: " + e.getMessage());
-        }
+    public void readMail(int mailId) throws ServiceException, SQLException {
+        emailRepository.readEmail(mailId);
     }
 }

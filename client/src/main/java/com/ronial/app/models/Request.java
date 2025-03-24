@@ -4,8 +4,8 @@ import com.ronial.app.mail.CommandType;
 import org.json.JSONObject;
 
 public class Request {
-    private CommandType command;
-    private JSONObject data;
+    private final CommandType command;
+    private final JSONObject data;
     public Request(CommandType command) {
         this.command = command;
         this.data = new JSONObject();

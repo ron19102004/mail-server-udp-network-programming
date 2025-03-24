@@ -1,7 +1,7 @@
 package com.ronial.app.mail.commands.strategies;
 
 import com.ronial.app.context.ContextProvider;
-import com.ronial.app.exceptions.RepositoryException;
+import com.ronial.app.exceptions.ServiceException;
 import com.ronial.app.mail.Server;
 import com.ronial.app.mail.commands.Command;
 import com.ronial.app.mail.service.MailService;
@@ -26,14 +26,13 @@ public class SendMailCommandStrategy implements Command {
 
     @Override
     public void execute(Server server, Request request) throws IOException {
-        Instant time = Instant.now();
         String emailJson = request.getData().getString("email");
         Email email = Email.fromJSON(emailJson);
-        log(request.toHostPortString() + ":" + email.getFrom() + " - Send mail started!");
 
-        email.setId(time.toEpochMilli());
+        log(request.toHostPortString() + ":" + email.getFrom() + " - Send mail started!");
         logSendMail(request.toHostPortString(), email);
 
+        //Create response
         Response response = new Response(true);
         if (email.getTo().contains(email.getFrom())) {
             response.setSuccess(false)
@@ -42,23 +41,11 @@ public class SendMailCommandStrategy implements Command {
             return;
         }
 
-        List<String> links = !email.getLinks().trim().isEmpty() ?
-                Arrays.stream(email.getLinks().split(";")).toList() : List.of();
-
-        String contentHtml = toContentHtml(
-                email.getTo(),
-                email.getFrom(),
-                DateUtils.formatInstant(time),
-                email.getSubject(),
-                email.getBody(),
-                links
-        );
-        email.setContentHtml(contentHtml);
         try {
             mailService.saveEmail(email);
             response.setMessage("Gửi mail thành công 😊");
             log(request.toHostPortString() + " - Send mail completed!");
-        } catch (RepositoryException e) {
+        } catch (ServiceException e) {
             response.setSuccess(false)
                     .setMessage(e.getMessage());
             log(request.toHostPortString() + " - Send mail error: " + e.getMessage());
@@ -69,42 +56,17 @@ public class SendMailCommandStrategy implements Command {
     }
 
     private void logSendMail(String hostPort, Email email) {
-        log(hostPort + "#FROM: " + email.getFrom());
-        log(hostPort + "#TO: " + email.getTo());
-        log(hostPort + "#SUBJECT: " + email.getSubject());
-        log(hostPort + "#BODY: " + email.getBody());
-        log(hostPort + "#LINKS: " + email.getLinks());
+        StringBuilder sendLog = new StringBuilder();
+        sendLog.append("\n").append(hostPort).append(" - ").append("FROM: ").append(email.getFrom()).append("\n");
+        sendLog.append(hostPort).append(" - ").append("TO: ").append(email.getTo()).append("\n");
+        sendLog.append(hostPort).append(" - ").append("SUBJECT: ").append(email.getSubject()).append("\n");
+        sendLog.append(hostPort).append(" - ").append("BODY: ").append(email.getBody()).append("\n");
+        sendLog.append(hostPort).append(" - ").append("ATTACHMENTS: ").append(email.getLinks()).append("\n");
+        log(sendLog.toString());
     }
 
     private void log(Object log) {
         ContextProvider.<LogFrame>get(LogFrame.class)
                 .addLog(SendMailCommandStrategy.class, log);
-    }
-
-    private String toContentHtml(String to, String from, String time,
-                                 String subject,
-                                 String body,
-                                 List<String> links) {
-        StringBuilder html = new StringBuilder();
-        html
-                .append("<h3 style='color: red;font-size: 14px'>✉️ Nội dung từ: <span id='emailFrom'>").append(from).append("</span></h3>")
-                .append("<h3 style='color: #00897B;font-size: 14px'>✉️ Nội dung đến: <span id='emailFrom'>").append(to).append("</span></h3>")
-                .append("<p style='font-size: 12px; color: gray; margin-top: -10px; margin-bottom: 15px;'>🕒 Gửi lúc: <span id='emailTime'>")
-                .append(time).append("</span></p>")
-                .append("<p><span style='color: #00897B; font-weight: bold;font-size: 14px'>Tiêu đề</span>: ").append(subject).append("</p>")
-                .append("<p><span style='color: #00897B; font-weight: bold;font-size: 14px'>Nội dung:</span></p>")
-                .append("<p style='font-size: 14px; color: #333;'>").append(body).append("</p>");
-
-        if (links != null && !links.isEmpty()) {
-            html.append("<p><span style='color: #00897B; font-weight: bold;'>Danh sách link liên kết:</span></p>")
-                    .append("<ul style='list-style-type: decimal;'>");
-            for (String link : links) {
-                html.append("<li><a href='").append(link).append("'>").append(link).append("</a></li>");
-            }
-            html.append("</ul>");
-        }
-
-        html.append("<p style='color: gray; font-size: 12px; margin-top: 20px;'>📌Ký tên: ").append(from).append("</p>");
-        return html.toString();
     }
 }

@@ -4,16 +4,18 @@ import com.ronial.app.models.Email;
 import com.ronial.app.models.Request;
 import com.ronial.app.models.Response;
 import com.ronial.app.models.User;
+import com.ronial.app.utils.DateUtils;
 import com.ronial.app.views.*;
 import com.ronial.app.views.utils.Toast;
 import org.json.JSONArray;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MailServiceImpl implements MailService {
-    private Client client;
+    private final Client client;
 
     public MailServiceImpl(Client client) {
         this.client = client;
@@ -93,15 +95,28 @@ public class MailServiceImpl implements MailService {
 
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
-            List<Email> emails = new ArrayList<>();
-            JSONArray jsonArray = new JSONArray(response.getData().getString("emails"));
-            view.getEmailListModel().clear();
-            jsonArray.forEach(o -> {
+            JSONArray jsonArrayEmailsReceive = new JSONArray(response.getData().getString("emailsReceive"));
+            JSONArray jsonArrayEmailsSent= new JSONArray(response.getData().getString("emailsSent"));
+
+            view.getInboxModel().clear();
+            view.getSentModel().clear();
+
+            List<Email> emailsReceive = new ArrayList<>();
+            List<Email> emailsSent = new ArrayList<>();
+
+            jsonArrayEmailsReceive.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
-                emails.add(email);
-                view.getEmailListModel().addElement("☺️" + (email.isSeen() ? "" : "(Chưa đọc)") + email.getSubject());
+                emailsReceive.add(email);
+                view.getInboxModel().addElement(" ☺️ " + (email.isSeen() ? "" : " (Chưa đọc) ") + email.getSubject());
             });
-            view.setEmails(emails);
+            jsonArrayEmailsSent.forEach(o -> {
+                Email email = Email.fromJSON(o.toString());
+                email.setSeen(true);
+                emailsSent.add(email);
+                view.getSentModel().addElement(" ☺️ " + email.getSubject());
+            });
+            view.setInboxEmails(emailsReceive);
+            view.setSentEmails(emailsSent);
         } else {
             Toast.error(response.getMessage());
         }
@@ -111,7 +126,7 @@ public class MailServiceImpl implements MailService {
     public void deleteMail(MailView view) throws IOException {
         Request request = new Request(CommandType.DELETE_MAIL);
         int selectedEmailIndex = view.getEmailList().getSelectedIndex();
-        Email email = view.getEmails().get(selectedEmailIndex);
+        Email email = view.getEmailFromTabbedPane(selectedEmailIndex);
         request.getData()
                 .put("email", view.getUser().getEmail())
                 .put("id", email.getId());
@@ -127,34 +142,13 @@ public class MailServiceImpl implements MailService {
     }
 
     @Override
-    public void replyMail(ReplyMailView view) throws IOException {
-        Request request = new Request(CommandType.REPLY_MAIL);
-        Email email = new Email();
-        email.setBody(view.messageArea.getText().trim());
-        email.setLinks(view.attachLink.getText().trim());
-        email.setId(view.email.getId());
-        email.setFrom(view.mailView.getUser().getEmail());
-
-        request.getData()
-                .put("email", email.toJSON());
-        client.sendRequest(request);
-        Response response = client.receiveResponse();
-        if (response.isSuccess()) {
-            Toast.info(response.getMessage());
-            view.mailView.refreshInbox();
-            view.dispose();
-        } else {
-            Toast.error(response.getMessage());
-        }
-    }
-
-    @Override
     public void transferMail(TransferMailView view) throws IOException {
         Request request = new Request(CommandType.TRANSFER_MAIL);
+        Email email = view.email;
+        email.setTransferFrom(view.mailView.getUser().getEmail());
         request.getData()
-                .put("email", view.email.toJSON())
-                .put("emails", view.emailsField.getText().trim())
-                .put("transferFrom", view.mailView.getUser().getEmail());
+                .put("email", email.toJSON())
+                .put("emails", view.emailsField.getText().trim());
         client.sendRequest(request);
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
@@ -167,6 +161,7 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void readMail(MailView view, Email email) throws IOException {
+        if (email.isSeen()) return;
         Request request = new Request(CommandType.READ_MAIL);
         request.getData()
                 .put("email", view.getUser().getEmail())

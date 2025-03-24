@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CommandExecutor {
-    private Server server;
-    private Map<CommandType, Class<? extends Command>> commands;
+    private final Server server;
+    private final Map<CommandType, Class<? extends Command>> commands;
 
     public CommandExecutor(Server server) {
         this.server = server;
@@ -22,7 +22,6 @@ public class CommandExecutor {
         putCommand(CommandType.SEND_MAIL, SendMailCommandStrategy.class);
         putCommand(CommandType.GET_MAILS, GetMailsCommandStrategy.class);
         putCommand(CommandType.DELETE_MAIL, DeleteMailCommandStrategy.class);
-        putCommand(CommandType.REPLY_MAIL, ReplyMailCommandStrategy.class);
         putCommand(CommandType.TRANSFER_MAIL, TransferMailCommandStrategy.class);
         putCommand(CommandType.READ_MAIL, ReadMailCommandStrategy.class);
     }

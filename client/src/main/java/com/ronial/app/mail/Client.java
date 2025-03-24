@@ -8,9 +8,9 @@ import java.io.IOException;
 import java.net.*;
 
 public class Client implements Context {
-    private DatagramSocket socket;
-    private InetAddress address;
-    private int port;
+    private final DatagramSocket socket;
+    private final InetAddress address;
+    private final int port;
     public Client(String host,int port) throws SocketException, UnknownHostException {
         this.socket = new DatagramSocket();
         this.address = InetAddress.getByName(host);

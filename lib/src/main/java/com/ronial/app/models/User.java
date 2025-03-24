@@ -1,16 +1,29 @@
 package com.ronial.app.models;
 
+import com.ronial.app.utils.DateUtils;
 import org.json.JSONObject;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+
 public class User {
+    private int id;
     private String name;
     private String email;
     private String password;
-
-    public User(String name, String email, String password) {
+    private String createdAt;
+    public User() {}
+    public User(int id,
+                String name,
+                String email,
+                String password,
+                String createdAt) {
         this.name = name;
         this.email = email;
         this.password = password;
+        this.createdAt = createdAt;
+        this.id = id;
     }
 
     public static User fromJson(String json) {
@@ -18,7 +31,9 @@ public class User {
         String name = jsonObject.getString("name");
         String email = jsonObject.getString("email");
         String password = jsonObject.getString("password");
-        return new User(name, email, password);
+        String createdAt = jsonObject.getString("createdAt");
+        int id = jsonObject.getInt("id");
+        return new User(id,name, email, password, createdAt);
     }
 
     public String toJson() {
@@ -26,7 +41,19 @@ public class User {
                 .put("name", name)
                 .put("email", email)
                 .put("password", password)
+                .put("createdAt", createdAt)
+                .put("id", id)
                 .toString();
+    }
+    public static User fromResultSet(ResultSet rs) throws SQLException {
+        Timestamp createdAt = rs.getTimestamp("created_at");
+        return new User(
+                rs.getInt("id"),
+                rs.getString("fullName"),
+                rs.getString("email"),
+                rs.getString("password"),
+                DateUtils.formatInstant(createdAt.toInstant())
+        );
     }
 
     public String getName() {
@@ -51,5 +78,17 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+    public String getCreatedAt() {
+        return createdAt;
+    }
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+    public int getId() {
+        return id;
+    }
+    public void setId(int id) {
+        this.id = id;
     }
 }

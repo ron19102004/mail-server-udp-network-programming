@@ -1,13 +1,11 @@
 package com.ronial.app.mail;
 
 import com.ronial.app.MailServerApplication;
-import com.ronial.app.conf.ConfigManagement;
 import com.ronial.app.context.Context;
 import com.ronial.app.context.ContextProvider;
 import com.ronial.app.mail.commands.CommandExecutor;
 import com.ronial.app.models.Request;
 import com.ronial.app.models.Response;
-import com.ronial.app.utils.DateUtils;
 import com.ronial.app.views.LogFrame;
 
 import java.io.*;
@@ -23,10 +21,7 @@ public class Server implements Context {
     }
 
     public static Server launch() throws IOException {
-        int port = (int) ContextProvider
-                .<ConfigManagement>get(ConfigManagement.class)
-                .value("server.port").get();
-        return new Server(port);
+        return new Server(3000);
     }
 
     private Server(int port) throws IOException {

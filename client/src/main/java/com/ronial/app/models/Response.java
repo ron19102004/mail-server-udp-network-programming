@@ -11,8 +11,8 @@ public class Response {
 
     private Response(DatagramPacket packet) {
         String dataJson = new String(packet.getData(), 0, packet.getLength());
-        System.out.println(dataJson);
         this.data = new JSONObject(dataJson);
+        System.out.println(this.data);
         this.success = data.getBoolean("success");
         this.message = data.getString("message");
     }

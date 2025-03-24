@@ -12,7 +12,6 @@ public interface MailService extends Context {
     void sendMail(CreateMailView view) throws IOException;
     void loadMails(MailView view) throws IOException;
     void deleteMail(MailView view) throws IOException;
-    void replyMail(ReplyMailView view) throws IOException;
     void transferMail(TransferMailView view) throws IOException;
     void readMail(MailView view, Email email) throws IOException;
 }

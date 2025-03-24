@@ -1,20 +1,17 @@
 package com.ronial.app.mail.service;
 
 import com.ronial.app.context.Context;
-import com.ronial.app.exceptions.RepositoryException;
+import com.ronial.app.exceptions.ServiceException;
 import com.ronial.app.models.Email;
 import com.ronial.app.models.User;
 
-import java.util.List;
+import java.sql.SQLException;
 
 public interface MailService extends Context {
-    void createMailAccount(String email, String password, String name) throws RepositoryException;
-    User loginMailAccount(String email, String password) throws RepositoryException;
-    void saveEmail(Email email) throws RepositoryException;
-    Email getEmail(String email,long id) throws RepositoryException;
-    List<Email> getEmails(String email) throws RepositoryException;
-    void deleteEmail(String email,long id) throws RepositoryException;
-    void replyEmail(Email email) throws RepositoryException;
-    void transferMail(String[] emails ,Email email) throws RepositoryException;
-    void readMail(String userEmail, long mailId) throws RepositoryException;
+    void createMailAccount(User user) throws ServiceException;
+    User loginMailAccount(String email, String password) throws ServiceException;
+    void saveEmail(Email email) throws ServiceException;
+    void deleteEmail(String email,int id) throws ServiceException, SQLException;
+    void transferMail(String[] emails ,Email email) throws ServiceException;
+    void readMail(int mailId) throws ServiceException, SQLException;
 }

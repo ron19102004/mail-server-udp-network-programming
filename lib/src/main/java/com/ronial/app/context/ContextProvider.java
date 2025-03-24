@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class ContextProvider {
-    private static Map<Class<? extends Context>, Object> models;
+    private static final Map<Class<? extends Context>, Object> models;
     static {
         models = new HashMap<>();
     }
