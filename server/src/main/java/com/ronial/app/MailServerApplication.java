@@ -43,9 +43,9 @@ public class MailServerApplication {
         DatabaseProperty databaseProperty = new DatabaseProperty(
                 "localhost",
                 3306,
-                "root",
-                "",
-                "mail_server_udp");
+                "mailsv",
+                "mailsv",
+                "mailsv_udp");
         DatabaseConf databaseConf = new DatabaseConf();
         databaseConf.connect(DatabaseConf.DatabaseType.MYSQL, databaseProperty);
         ContextProvider.register(DatabaseConf.class, databaseConf);

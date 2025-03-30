@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 import java.util.Objects;
-
 public class CreateMailView extends JFrame {
     public JTextField recipientField;
     public JTextField subjectField;
@@ -21,8 +20,8 @@ public class CreateMailView extends JFrame {
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
         this.mailView = mailView;
         MailService mailService = ContextProvider.get(MailService.class);
-        setTitle("Soạn mail - " + mailView.getUser().getEmail());
-        setSize(800, 600);
+        setTitle("Soạn mail - " + mailView.getUser().getName() + " - "+ mailView.getUser().getEmail());
+        setSize(1000, 800);
         setLayout(new BorderLayout());
         setLocationRelativeTo(null);
         setResizable(false);
@@ -46,7 +45,7 @@ public class CreateMailView extends JFrame {
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
 
-        composePanel.add(new JLabel("Đến(Sử dụng dấu , để tách mail):"));
+        composePanel.add(new JLabel("Đến(Sử dụng dấu , để tách mail | Có thể chỉ viết username trong username@gmail.com):"));
         composePanel.add(recipientField);
 
         composePanel.add(new JLabel("Tiêu đề:"));

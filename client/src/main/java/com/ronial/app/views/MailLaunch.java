@@ -1,5 +1,7 @@
 package com.ronial.app.views;
 
+import com.ronial.app.models.User;
+
 import javax.swing.*;
 import java.awt.*;
 import java.util.Objects;

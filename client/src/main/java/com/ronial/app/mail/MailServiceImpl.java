@@ -5,6 +5,7 @@ import com.ronial.app.models.Request;
 import com.ronial.app.models.Response;
 import com.ronial.app.models.User;
 import com.ronial.app.utils.DateUtils;
+import com.ronial.app.utils.RegexUtils;
 import com.ronial.app.views.*;
 import com.ronial.app.views.utils.Toast;
 import org.json.JSONArray;
@@ -12,6 +13,7 @@ import org.json.JSONArray;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MailServiceImpl implements MailService {
@@ -24,9 +26,13 @@ public class MailServiceImpl implements MailService {
     @Override
     public void registerAccount(RegisterView view) throws IOException {
         Request request = new Request(CommandType.REGISTER_ACCOUNT);
+        String email = view.emailField.getText().trim();
+        if (!RegexUtils.isEmail(email)){
+            email = view.emailField.getText().trim() + "@gmail.com";
+        }
         request.getData()
                 .put("name", view.nameField.getText().trim())
-                .put("email", view.emailField.getText().trim())
+                .put("email", email)
                 .put("password", new String(view.passwordField.getPassword()).trim());
 
         client.sendRequest(request);
@@ -44,8 +50,12 @@ public class MailServiceImpl implements MailService {
     @Override
     public void signInAccount(SignInView view) throws IOException {
         Request request = new Request(CommandType.LOGIN_ACCOUNT);
+        String email = view.emailField.getText().trim();
+        if (!RegexUtils.isEmail(email)){
+            email = view.emailField.getText().trim() + "@gmail.com";
+        }
         request.getData()
-                .put("email", view.emailField.getText().trim())
+                .put("email",email)
                 .put("password", new String(view.passwordField.getPassword()).trim());
         client.sendRequest(request);
 
@@ -64,17 +74,26 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendMail(CreateMailView view) throws IOException {
         Request request = new Request(CommandType.SEND_MAIL);
+        StringBuilder recipients = new StringBuilder();
+        Arrays.stream(view.recipientField.getText().trim().split(","))
+                .forEach(to -> {
+            if (RegexUtils.isEmail(to.trim())){
+                recipients.append(to.trim());
+            } else{
+                recipients.append(to).append("@gmail.com");
+            }
+            recipients.append(",");
+        });
         Email email = new Email();
-        email.setTo(view.recipientField.getText().trim());
+        email.setTo(recipients.toString());
         email.setFrom(view.mailView.getUser().getEmail());
         email.setSubject(view.subjectField.getText().trim());
-        email.setBody(view.messageArea.getText().trim());
+        email.setBody(view.messageArea.getText().trim().replace("\n", "<br/>"));
         email.setLinks(view.attachLink.getText().trim());
         email.setIsSeen(false);
-
-        System.out.println(email.toJSON());
         request.getData()
                 .put("email", email.toJSON());
+
         client.sendRequest(request);
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
@@ -144,11 +163,22 @@ public class MailServiceImpl implements MailService {
     @Override
     public void transferMail(TransferMailView view) throws IOException {
         Request request = new Request(CommandType.TRANSFER_MAIL);
+        StringBuilder recipients = new StringBuilder();
+        Arrays.stream(view.emailsField.getText().trim().split(","))
+                .forEach(to -> {
+                    if (RegexUtils.isEmail(to.trim())){
+                        recipients.append(to.trim());
+                    } else{
+                        recipients.append(to).append("@gmail.com");
+                    }
+                    recipients.append(",");
+                });
+
         Email email = view.email;
         email.setTransferFrom(view.mailView.getUser().getEmail());
         request.getData()
                 .put("email", email.toJSON())
-                .put("emails", view.emailsField.getText().trim());
+                .put("emails", recipients.toString());
         client.sendRequest(request);
         Response response = client.receiveResponse();
         if (response.isSuccess()) {

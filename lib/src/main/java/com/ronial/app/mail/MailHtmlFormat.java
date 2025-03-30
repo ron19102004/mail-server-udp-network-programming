@@ -14,7 +14,6 @@ public class MailHtmlFormat {
                 .append("<div style='background: white; padding: 15px; border-radius: 8px; margin-top: 10px;'>")
                 .append("<p style='margin: 5px 0; font-size: 14px;'><strong style='color: #00796b;'>👤 From:</strong> ").append(email.getFrom()).append("</p>");
 
-        // Nếu email được chuyển tiếp từ ai đó, hiển thị thông tin đó
         if (!email.getTransferFrom().isBlank()) {
             html.append("<p style='margin: 5px 0; font-size: 14px; color: #d84315; font-weight: bold;'>🔄 Forwarded from: ")
                     .append(email.getTransferFrom()).append("</p>");
@@ -28,7 +27,6 @@ public class MailHtmlFormat {
                 .append("</div>")
                 .append("</div>");
 
-        // Nếu có link đính kèm
         if (!email.getLinks().isBlank()) {
             List<String> links = Arrays.stream(email.getLinks().split(";")).toList();
             if (!links.isEmpty()) {

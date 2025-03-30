@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class MailView extends JFrame {
-    private User user;
+    private final User user;
     private DefaultListModel<String> inboxModel, sentModel;
     private JList<String> emailList;
     private JEditorPane emailContent;
