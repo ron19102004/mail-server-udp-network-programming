@@ -11,13 +11,17 @@ import com.ronial.app.views.LogFrame;
 import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.time.Instant;
 
 public class Server implements Context {
     private DatagramSocket serverSocket;
     private boolean isRunning;
+    private final InetAddress localHost;
 
-    private Server() {
+    private Server() throws UnknownHostException {
+        localHost = InetAddress.getLocalHost();
     }
 
     public static Server launch() throws IOException {
@@ -25,6 +29,7 @@ public class Server implements Context {
     }
 
     private Server(int port) throws IOException {
+        localHost = InetAddress.getLocalHost();
         this.isRunning = true;
         this.serverSocket = new DatagramSocket(port);
         byte[] buffer = new byte[102400000];
@@ -61,7 +66,7 @@ public class Server implements Context {
                 throw new RuntimeException(ex);
             }
         });
-        logFrame.addLog(Server.class, "Server started! Port: " + port);
+        logFrame.addLog(Server.class, "Server started! Port: " + port + " | IP: " + localHost.getHostAddress());
     }
 
     public void close() {
