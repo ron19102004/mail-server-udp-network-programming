@@ -9,6 +9,7 @@ import com.ronial.app.mail.service.MailService;
 import com.ronial.app.mail.service.MailServiceImpl;
 import com.ronial.app.repositories.RepositoryInitializer;
 import com.ronial.app.security.RSASecurity;
+import com.ronial.app.views.GmailAppPasswordForm;
 import com.ronial.app.views.LogFrame;
 
 import java.io.File;
@@ -29,7 +30,7 @@ public class MailServerApplication {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void start(MailConf.AuthenticationProps mailAuthProps) throws IOException {
         LogFrame logFrame = new LogFrame();
         ContextProvider.register(LogFrame.class, logFrame);
         String welcome = "\n\n";
@@ -38,7 +39,7 @@ public class MailServerApplication {
         welcome += "===============================================================================\n\n";
         logFrame.addLog(MailServerApplication.class, welcome);
         //Session mailer initialize
-        MailConf.initialize();
+        MailConf.initialize(mailAuthProps);
         //Database configuration and connection
         DatabaseProperty databaseProperty = new DatabaseProperty(
                 "localhost",
@@ -59,7 +60,11 @@ public class MailServerApplication {
         ContextProvider.register(MailService.class, mailService);
         //Start mail server
         Server server = Server.launch();
-        ContextProvider.register(Server.class,server);
+        ContextProvider.register(Server.class, server);
 
+    }
+
+    public static void main(String[] args) {
+        new GmailAppPasswordForm();
     }
 }

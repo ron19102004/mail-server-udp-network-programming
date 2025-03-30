@@ -5,10 +5,11 @@ import com.ronial.app.context.ContextProvider;
 import java.util.Properties;
 
 public class MailConf {
+    public record AuthenticationProps(String username, String password) {}
     private MailConf() {}
-    public static void initialize() {
+    public static void initialize(AuthenticationProps props) {
         SessionMailer.AuthProperties authProperties =
-                new SessionMailer.AuthProperties("ron19102004@gmail.com",  "yolinxdflfxnkcuc");
+                new SessionMailer.AuthProperties(props.username,  props.password);
         Properties sessionProperties = new Properties();
         sessionProperties.put("mail.smtp.auth", "true");
         sessionProperties.put("mail.smtp.starttls.enable", "true");

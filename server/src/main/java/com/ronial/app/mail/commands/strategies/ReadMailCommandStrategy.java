@@ -54,7 +54,6 @@ public class ReadMailCommandStrategy implements Command {
             } else {
                 throw new ServiceException("Email not found");
             }
-            log(request.toHostPortString() + " - " + email + " read mail " + mailId + " successfully");
         } catch (ServiceException e) {
             response.setSuccess(false)
                     .setMessage(e.getMessage());
