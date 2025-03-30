@@ -67,6 +67,7 @@ public class Server implements Context {
             }
         });
         logFrame.addLog(Server.class, "Server started! Port: " + port + " | IP: " + localHost.getHostAddress());
+        logFrame.addLog(Server.class,  "===============================================================================\n\n");
     }
 
     public void close() {

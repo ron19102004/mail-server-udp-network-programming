@@ -30,7 +30,7 @@ public class MailView extends JFrame {
         this.user = user;
         setTitle("Mail - " + user.getEmail() + " - " + user.getName());
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
-        setSize(1200, 600);
+        setSize(1300, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));

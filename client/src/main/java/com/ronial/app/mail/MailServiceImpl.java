@@ -70,22 +70,36 @@ public class MailServiceImpl implements MailService {
             Toast.error(response.getMessage());
         }
     }
-
+    private StringBuilder validateSendMail(Email email){
+        StringBuilder errors = new StringBuilder();
+        if (email.getTo().trim().isBlank()){
+            errors.append("Địa chỉ đến không thể trống.\n");
+        }
+        if (email.getSubject().trim().isBlank()){
+            errors.append("Tiêu đề không thể trống.\n");
+        }
+        if (email.getBody().trim().isBlank()){
+            errors.append("Nội dung không thể trống.\n");
+        }
+        return errors;
+    }
     @Override
     public void sendMail(CreateMailView view) throws IOException {
         Request request = new Request(CommandType.SEND_MAIL);
         StringBuilder recipients = new StringBuilder();
-        Arrays.stream(view.recipientField.getText().trim().split(","))
-                .forEach(to -> {
-            if (RegexUtils.isEmail(to.trim())){
-                recipients.append(to.trim());
-            } else{
-                recipients.append(to).append("@gmail.com");
-            }
-            recipients.append(",");
-        });
+        if (!view.recipientField.getText().trim().isBlank()){
+            Arrays.stream(view.recipientField.getText().trim().split(","))
+                    .forEach(to -> {
+                        if (RegexUtils.isEmail(to.trim())){
+                            recipients.append(to.trim());
+                        } else{
+                            recipients.append(to).append("@gmail.com");
+                        }
+                        recipients.append(",");
+                    });
+        }
         Email email = new Email();
-        email.setTo(recipients.toString());
+        email.setTo(recipients.toString().trim());
         email.setFrom(view.mailView.getUser().getEmail());
         email.setSubject(view.subjectField.getText().trim());
         email.setBody(view.messageArea.getText().trim().replace("\n", "<br/>"));
@@ -93,7 +107,11 @@ public class MailServiceImpl implements MailService {
         email.setIsSeen(false);
         request.getData()
                 .put("email", email.toJSON());
-
+        StringBuilder errors = validateSendMail(email);
+        if (!errors.isEmpty()){
+            Toast.error(errors.toString());
+            return;
+        }
         client.sendRequest(request);
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
@@ -164,21 +182,25 @@ public class MailServiceImpl implements MailService {
     public void transferMail(TransferMailView view) throws IOException {
         Request request = new Request(CommandType.TRANSFER_MAIL);
         StringBuilder recipients = new StringBuilder();
-        Arrays.stream(view.emailsField.getText().trim().split(","))
-                .forEach(to -> {
-                    if (RegexUtils.isEmail(to.trim())){
-                        recipients.append(to.trim());
-                    } else{
-                        recipients.append(to).append("@gmail.com");
-                    }
-                    recipients.append(",");
-                });
-
+        if (!view.emailsField.getText().trim().isBlank()){
+            Arrays.stream(view.emailsField.getText().trim().split(","))
+                    .forEach(to -> {
+                        if (RegexUtils.isEmail(to.trim())){
+                            recipients.append(to.trim());
+                        } else{
+                            recipients.append(to).append("@gmail.com");
+                        }
+                        recipients.append(",");
+                    });
+        } else {
+            Toast.error("Địa chỉ đến không thể trống");
+            return;
+        }
         Email email = view.email;
         email.setTransferFrom(view.mailView.getUser().getEmail());
         request.getData()
                 .put("email", email.toJSON())
-                .put("emails", recipients.toString());
+                .put("emails", recipients.toString().trim());
         client.sendRequest(request);
         Response response = client.receiveResponse();
         if (response.isSuccess()) {
