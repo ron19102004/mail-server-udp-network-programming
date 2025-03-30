@@ -214,6 +214,7 @@ public class MailServiceImpl implements MailService {
     @Override
     public void readMail(MailView view, Email email) throws IOException {
         if (email.isSeen()) return;
+        email.setSeen(true);
         Request request = new Request(CommandType.READ_MAIL);
         request.getData()
                 .put("email", view.getUser().getEmail())

@@ -33,10 +33,15 @@ public class MailHtmlFormat {
                 html.append("<h3 style='color: #00796b; font-size: 14px; margin-top: 20px; text-align: center;'>🔗 Attached Links:</h3>")
                         .append("<div style='text-align: center; margin-top: 10px;'>");
                 for (String link : links) {
-                    html.append("<a href='").append(link)
-                            .append("' style='display: inline-block; background: #1e88e5; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; margin: 5px 2px; font-size: 13px;'>")
-                            .append("🔗 ").append(link)
-                            .append("</a><br/>");
+                    if (link.matches(".*\\.(jpg|jpeg|png|gif|bmp|webp)$")) {
+                        html.append("<img src='").append(link)
+                                .append("' width='250' height='250' style='border-radius: 8px; margin: 5px 0;'>");
+                    } else {
+                        html.append("<a href='").append(link)
+                                .append("' style='display: inline-block; background: #1e88e5; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; margin: 5px 2px; font-size: 13px;'>")
+                                .append("🔗 ").append(link)
+                                .append("</a><br/>");
+                    }
                 }
                 html.append("</div>");
             }
