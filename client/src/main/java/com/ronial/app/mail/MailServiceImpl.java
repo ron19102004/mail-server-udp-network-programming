@@ -6,6 +6,7 @@ import com.ronial.app.models.Response;
 import com.ronial.app.models.User;
 import com.ronial.app.utils.DateUtils;
 import com.ronial.app.utils.RegexUtils;
+import com.ronial.app.utils.StringUtils;
 import com.ronial.app.views.*;
 import com.ronial.app.views.utils.Toast;
 import org.json.JSONArray;
@@ -144,13 +145,13 @@ public class MailServiceImpl implements MailService {
             jsonArrayEmailsReceive.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
                 emailsReceive.add(email);
-                view.getInboxModel().addElement(" ✉️ " + (email.isSeen() ? "" : " (Chưa đọc) ") + email.getSubject());
+                view.getInboxModel().addElement(" ✉️ " + (email.isSeen() ? "" : " (Chưa đọc) ") + StringUtils.truncateString(email.getSubject(), 30));
             });
             jsonArrayEmailsSent.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
                 email.setSeen(true);
                 emailsSent.add(email);
-                view.getSentModel().addElement(" ✉️ " + email.getSubject());
+                view.getSentModel().addElement(" ✉️ " + StringUtils.truncateString(email.getSubject(), 30));
             });
             view.setInboxEmails(emailsReceive);
             view.setSentEmails(emailsSent);

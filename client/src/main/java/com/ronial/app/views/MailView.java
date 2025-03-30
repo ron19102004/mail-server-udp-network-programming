@@ -25,19 +25,20 @@ public class MailView extends JFrame {
     private List<Email> inboxEmails, sentEmails;
     private final MailService mailService;
     private JTabbedPane tabbedPane;
-    private SwingBrowser swingBrowser;
+    private final SwingBrowser swingBrowser;
 
     public static void launch(User user) {
         new MailView(user);
     }
 
     public MailView(User user) {
+        swingBrowser = ContextProvider.get(SwingBrowser.class);
         mailService = ContextProvider.get(MailService.class);
         this.user = user;
         setTitle("Mail - " + user.getEmail() + " - " + user.getName());
         setIconImage(new ImageIcon(Objects.requireNonNull(getClass().getResource("/assets/Email-icon.png"))).getImage());
         setSize(1300, 800);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
         getContentPane().setBackground(new Color(240, 240, 240));
@@ -55,32 +56,31 @@ public class MailView extends JFrame {
 
         refreshInbox();
         setVisible(true);
-
-        SwingUtilities.invokeLater(() -> {
-            swingBrowser = SwingBrowser.launch();
-        });
     }
 
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu menuOptions = new JMenu("📩 Tùy chọn");
-        JMenuItem newEmailItem = new JMenuItem("📝 Tạo Mail");
-        JMenuItem refreshItem = new JMenuItem("🔄 Làm mới");
-        JMenuItem deleteMail = new JMenuItem("❌ Xóa mail hiện tại");
-        JMenuItem transferMail = new JMenuItem("🚚 Chuyển tiếp mail hiện tại");
-        JMenuItem logout = new JMenuItem("☠️ Đăng xuất");
+        menuBar.setBackground(new Color(245, 245, 245)); // Màu nền sáng
+
+        JMenu menuOptions = new JMenu("♨️ Hệ thống");
+        JMenu menuMails = new JMenu("📩 Tùy chọn thư");
+
+        JMenuItem newEmailItem = createMenuItem("📝 Tạo Mail", "Soạn email mới");
+        JMenuItem refreshItem = createMenuItem("🔄 Làm mới", "Làm mới danh sách email");
+        JMenuItem deleteMail = createMenuItem("❌ Xóa mail hiện tại", "Xóa email đang mở");
+        JMenuItem transferMail = createMenuItem("🚚 Chuyển tiếp mail", "Chuyển tiếp email hiện tại");
+        JMenuItem logout = createMenuItem("☠️ Đăng xuất", "Đăng xuất khỏi tài khoản");
+        JMenuItem exit = createMenuItem("❌ Thoát", "Thoát ứng dụng");
 
         newEmailItem.addActionListener(e -> new CreateMailView(this));
-        refreshItem.addActionListener(e -> {
-            refreshInbox();
-        });
+        refreshItem.addActionListener(e -> refreshInbox());
         transferMail.addActionListener(e -> {
             int selectedEmailIndex = emailList.getSelectedIndex();
             if (selectedEmailIndex > -1) {
                 Email email = getEmailFromTabbedPane(selectedEmailIndex);
                 new TransferMailView(email, this);
             } else {
-                Toast.error("Vui lòng chọn mail cần trả chuyển tiếp");
+                Toast.error("Vui lòng chọn mail cần chuyển tiếp");
             }
         });
         deleteMail.addActionListener(e -> {
@@ -94,17 +94,29 @@ public class MailView extends JFrame {
             dispose();
             MailLaunch.launch();
         });
+        exit.addActionListener(e -> System.exit(0));
 
+        menuMails.add(newEmailItem);
+        menuMails.add(refreshItem);
+        menuMails.add(deleteMail);
+        menuMails.add(transferMail);
 
-        menuOptions.add(newEmailItem);
-        menuOptions.add(refreshItem);
-        menuOptions.add(deleteMail);
-        menuOptions.add(transferMail);
         menuOptions.add(logout);
+        menuOptions.addSeparator();
+        menuOptions.add(exit);
+
         menuBar.add(menuOptions);
+        menuBar.add(menuMails);
         setJMenuBar(menuBar);
     }
-
+    private JMenuItem createMenuItem(String title, String tooltip) {
+        JMenuItem item = new JMenuItem(title);
+        item.setOpaque(true);
+        item.setBackground(Color.WHITE);
+        item.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        item.setToolTipText(tooltip);
+        return item;
+    }
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setPreferredSize(new Dimension(280, 0));

@@ -1,5 +1,6 @@
 package com.ronial.app.views;
 
+import com.ronial.app.context.Context;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -19,7 +20,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Objects;
 
-public class SwingBrowser extends JFrame {
+public class SwingBrowser extends JFrame implements Context {
     private String url;
     private WebEngine webEngine;
 
