@@ -144,7 +144,6 @@ public class MailView extends JFrame {
         // Thêm Border cho bảng
         JScrollPane emailScrollPane = new JScrollPane(emailList);
         emailScrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
-        emailScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         emailScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
 
@@ -169,7 +168,7 @@ public class MailView extends JFrame {
 
         emailContent = new JEditorPane();
         emailContent.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
-        emailContent.setContentType("text/html");
+//        emailContent.setContentType("text/html");
         emailContent.setEditable(false);
         emailContent.setBackground(new Color(245, 245, 245));
         emailContent.addHyperlinkListener(e -> {
@@ -182,8 +181,6 @@ public class MailView extends JFrame {
             }
         });
         JScrollPane contentScrollPane = new JScrollPane(emailContent);
-        contentScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        contentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         rightPanel.add(contentScrollPane, BorderLayout.CENTER);
         return rightPanel;
     }
