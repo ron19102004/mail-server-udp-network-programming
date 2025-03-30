@@ -113,6 +113,7 @@ public class MailView extends JFrame {
     private JMenuItem createMenuItem(String title, String tooltip) {
         JMenuItem item = new JMenuItem(title);
         item.setOpaque(true);
+        item.setFont(item.getFont().deriveFont(14f));
         item.setBackground(new Color(245, 245, 245));  // Màu nền sáng
         item.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         item.setToolTipText(tooltip);
