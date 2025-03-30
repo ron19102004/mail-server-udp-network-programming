@@ -109,26 +109,80 @@ public class MailView extends JFrame {
         menuBar.add(menuMails);
         setJMenuBar(menuBar);
     }
+
     private JMenuItem createMenuItem(String title, String tooltip) {
         JMenuItem item = new JMenuItem(title);
         item.setOpaque(true);
-        item.setBackground(Color.WHITE);
+        item.setBackground(new Color(245, 245, 245));  // Màu nền sáng
         item.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         item.setToolTipText(tooltip);
+
+        // Thêm hiệu ứng hover cho mục menu
+        item.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                item.setBackground(new Color(230, 230, 230));  // Màu nền khi hover
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                item.setBackground(new Color(245, 245, 245));  // Màu nền khi không hover
+            }
+        });
+
         return item;
     }
+
+//    private JMenuItem createMenuItem(String title, String tooltip) {
+//        JMenuItem item = new JMenuItem(title);
+//        item.setOpaque(true);
+//        item.setBackground(Color.WHITE);
+//        item.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+//        item.setToolTipText(tooltip);
+//        return item;
+//    }
+
+    //    private JPanel createLeftPanel() {
+//        JPanel leftPanel = new JPanel(new BorderLayout());
+//        leftPanel.setPreferredSize(new Dimension(280, 0));
+//        inboxModel = new DefaultListModel<>();
+//        sentModel = new DefaultListModel<>();
+//        emailList = new JList<>(inboxModel);
+//        emailList.addListSelectionListener(e -> displayEmailContent());
+//        JScrollPane emailScrollPane = new JScrollPane(emailList);
+//        emailScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+//        emailScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+//
+//        tabbedPane = new JTabbedPane();
+//        tabbedPane.addTab("Hộp thư đến", null);
+//        tabbedPane.addTab("Hộp thư đi", null);
+//        tabbedPane.addChangeListener(e -> switchEmailList());
+//
+//        leftPanel.add(tabbedPane, BorderLayout.NORTH);
+//        leftPanel.add(emailScrollPane, BorderLayout.CENTER);
+//
+//        return leftPanel;
+//    }
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setPreferredSize(new Dimension(280, 0));
+
         inboxModel = new DefaultListModel<>();
         sentModel = new DefaultListModel<>();
         emailList = new JList<>(inboxModel);
         emailList.addListSelectionListener(e -> displayEmailContent());
+
+        // Thêm Border cho bảng
         JScrollPane emailScrollPane = new JScrollPane(emailList);
+        emailScrollPane.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200)));
+        emailScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        emailScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+
 
         tabbedPane = new JTabbedPane();
         tabbedPane.addTab("Hộp thư đến", null);
         tabbedPane.addTab("Hộp thư đi", null);
+        tabbedPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0)); // Border dưới tab
+        tabbedPane.setBackground(new Color(240, 240, 240)); // Màu nền nhẹ cho tab
+
         tabbedPane.addChangeListener(e -> switchEmailList());
 
         leftPanel.add(tabbedPane, BorderLayout.NORTH);
@@ -137,6 +191,7 @@ public class MailView extends JFrame {
         return leftPanel;
     }
 
+
     private JPanel createRightPanel() {
         JPanel rightPanel = new JPanel(new BorderLayout(10, 10));
         rightPanel.setBorder(BorderFactory.createTitledBorder("📜 Nội dung thư"));
@@ -144,6 +199,7 @@ public class MailView extends JFrame {
         emailContent = new JEditorPane();
         emailContent.setContentType("text/html");
         emailContent.setEditable(false);
+        emailContent.setBackground(new Color(245, 245, 245));
         emailContent.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
@@ -154,6 +210,8 @@ public class MailView extends JFrame {
             }
         });
         JScrollPane contentScrollPane = new JScrollPane(emailContent);
+        contentScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        contentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         rightPanel.add(contentScrollPane, BorderLayout.CENTER);
         return rightPanel;
     }

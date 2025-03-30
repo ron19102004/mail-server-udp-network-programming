@@ -1,5 +1,8 @@
 package com.ronial.app;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatDarkLaf;
+import com.formdev.flatlaf.FlatLightLaf;
 import com.ronial.app.context.ContextProvider;
 import com.ronial.app.mail.Client;
 
@@ -15,6 +18,13 @@ import java.io.IOException;
 
 
 public class MailClientApplication {
+    static {
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // Hoặc FlatDarkLaf cho chế độ tối
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args) throws IOException {
         SwingUtilities.invokeLater(() -> {
             SwingBrowser swingBrowser = SwingBrowser.launch();

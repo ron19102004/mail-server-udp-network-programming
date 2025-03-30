@@ -34,6 +34,12 @@
             <artifactId>javafx-web</artifactId>
             <version>21</version>
         </dependency>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>2.4</version> <!-- Use the latest version -->
+        </dependency>
+
     </dependencies>
 
 </project>
