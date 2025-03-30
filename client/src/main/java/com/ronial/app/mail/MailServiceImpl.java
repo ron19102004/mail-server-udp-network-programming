@@ -144,13 +144,13 @@ public class MailServiceImpl implements MailService {
             jsonArrayEmailsReceive.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
                 emailsReceive.add(email);
-                view.getInboxModel().addElement(" ☺️ " + (email.isSeen() ? "" : " (Chưa đọc) ") + email.getSubject());
+                view.getInboxModel().addElement(" ✉️ " + (email.isSeen() ? "" : " (Chưa đọc) ") + email.getSubject());
             });
             jsonArrayEmailsSent.forEach(o -> {
                 Email email = Email.fromJSON(o.toString());
                 email.setSeen(true);
                 emailsSent.add(email);
-                view.getSentModel().addElement(" ☺️ " + email.getSubject());
+                view.getSentModel().addElement(" ✉️ " + email.getSubject());
             });
             view.setInboxEmails(emailsReceive);
             view.setSentEmails(emailsSent);

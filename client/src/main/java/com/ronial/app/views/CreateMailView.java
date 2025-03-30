@@ -29,7 +29,7 @@ public class CreateMailView extends JFrame {
         JPanel composePanel = new JPanel(new GridLayout(6, 1, 5, 5));
         composePanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        Font font = new Font("Arial", Font.PLAIN, 19);
+        Font font = new Font("Arial Unicode MS", Font.PLAIN, 19);
 
         recipientField = InputComponent.createTextField();
         recipientField.setFont(font);
@@ -41,7 +41,7 @@ public class CreateMailView extends JFrame {
         attachLink.setFont(font);
 
         messageArea = new JTextArea();
-        messageArea.setFont(new Font("Arial", Font.PLAIN, 20));
+        messageArea.setFont(new Font("Arial Unicode MS", Font.PLAIN, 20));
         messageArea.setLineWrap(true);
         messageArea.setWrapStyleWord(true);
 

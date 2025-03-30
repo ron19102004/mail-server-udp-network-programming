@@ -57,7 +57,7 @@ public class SendMailCommandStrategy implements Command {
 
     private void logSendMail(String hostPort, Email email) {
         StringBuilder sendLog = new StringBuilder();
-        sendLog.append("\n").append(hostPort).append(" - ").append("FROM: ").append(email.getFrom()).append("\n");
+        sendLog.append("\n\n").append(hostPort).append(" - ").append("FROM: ").append(email.getFrom()).append("\n");
         sendLog.append(hostPort).append(" - ").append("TO: ").append(email.getTo()).append("\n");
         sendLog.append(hostPort).append(" - ").append("SUBJECT: ").append(email.getSubject()).append("\n");
         sendLog.append(hostPort).append(" - ").append("BODY: ").append(email.getBody()).append("\n");
