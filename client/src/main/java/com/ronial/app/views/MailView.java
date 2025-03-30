@@ -224,11 +224,13 @@ public class MailView extends JFrame {
         if (selectedEmailIndex > -1) {
             Email email = getEmailFromTabbedPane(selectedEmailIndex);
             emailContent.setText(MailHtmlFormat.toContentHtml(email));
-            try {
-                mailService.readMail(this, email);
-            } catch (IOException e) {
-                System.out.println(e);
-            }
+            new Thread(() -> {
+                try {
+                    mailService.readMail(this, email);
+                } catch (IOException e) {
+                    System.out.println(e);
+                }
+            }).start();
         }
     }
 

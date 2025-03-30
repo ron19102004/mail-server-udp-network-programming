@@ -33,13 +33,13 @@ public class GetMailsCommandStrategy implements Command {
             List<Email> emailsSent = emailRepository.findAllEmailSentByEmail(email)
                     .stream()
                     .map(e -> {
-                        e.setBody("");
+                        e.setBody("Chờ tải ... ");
                         return e;
                     })
                     .toList();
             List<Email> emailsReceive = emailRepository.findAllEmailReceiveByEmail(email).stream()
                     .map(e -> {
-                        e.setBody("");
+                        e.setBody("Chờ tải ... ");
                         return e;
                     })
                     .toList();
