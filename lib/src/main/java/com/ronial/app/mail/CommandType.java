@@ -8,7 +8,9 @@ public enum CommandType {
     REPLY_MAIL,
     DELETE_MAIL,
     TRANSFER_MAIL,
-    READ_MAIL;
+    READ_MAIL,
+    ;
+
     public static CommandType getFromString(final String command) {
         CommandType result = null;
         try {

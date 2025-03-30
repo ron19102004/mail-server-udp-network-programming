@@ -32,7 +32,7 @@ public class Server implements Context {
         localHost = InetAddress.getLocalHost();
         this.isRunning = true;
         this.serverSocket = new DatagramSocket(port);
-        byte[] buffer = new byte[102400000];
+        byte[] buffer = new byte[1610612736];
         CommandExecutor commandExecutor = new CommandExecutor(this);
         new Thread(() -> {
             try {

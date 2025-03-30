@@ -26,9 +26,11 @@ public class MailView extends JFrame {
     private final MailService mailService;
     private JTabbedPane tabbedPane;
     private SwingBrowser swingBrowser;
+
     public static void launch(User user) {
         new MailView(user);
     }
+
     public MailView(User user) {
         mailService = ContextProvider.get(MailService.class);
         this.user = user;
@@ -58,6 +60,7 @@ public class MailView extends JFrame {
             swingBrowser = SwingBrowser.launch();
         });
     }
+
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu menuOptions = new JMenu("📩 Tùy chọn");
@@ -131,17 +134,18 @@ public class MailView extends JFrame {
         emailContent.setEditable(false);
         emailContent.addHyperlinkListener(e -> {
             if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-               try {
-                   swingBrowser.open(e.getURL().toString());
-               } catch (NullPointerException ex) {
-                  System.err.println(ex.getMessage());
-               }
+                try {
+                    swingBrowser.open(e.getURL().toString());
+                } catch (NullPointerException ex) {
+                    System.err.println(ex.getMessage());
+                }
             }
         });
         JScrollPane contentScrollPane = new JScrollPane(emailContent);
         rightPanel.add(contentScrollPane, BorderLayout.CENTER);
         return rightPanel;
     }
+
     public void refreshInbox() {
         try {
             emailContent.setText("");
@@ -150,6 +154,7 @@ public class MailView extends JFrame {
             throw new RuntimeException(e);
         }
     }
+
     private void switchEmailList() {
         if (tabbedPane.getSelectedIndex() == 0) {
             emailList.setModel(inboxModel);
@@ -158,15 +163,21 @@ public class MailView extends JFrame {
         }
         emailContent.setText("");
     }
+
     public Email getEmailFromTabbedPane(int selectedIndex) {
         Email email;
-        if (tabbedPane.getSelectedIndex() == 0){
+        if (tabbedPane.getSelectedIndex() == 0) {
             email = inboxEmails.get(selectedIndex);
         } else {
             email = sentEmails.get(selectedIndex);
         }
         return email;
     }
+
+    public void displayEmailContent(Email email) {
+        emailContent.setText(MailHtmlFormat.toContentHtml(email));
+    }
+
     private void displayEmailContent() {
         int selectedEmailIndex = emailList.getSelectedIndex();
         if (selectedEmailIndex > -1) {
@@ -179,9 +190,11 @@ public class MailView extends JFrame {
             }
         }
     }
+
     public JEditorPane getEmailContent() {
         return emailContent;
     }
+
     public User getUser() {
         return user;
     }

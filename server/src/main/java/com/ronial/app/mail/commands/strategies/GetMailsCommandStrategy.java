@@ -30,8 +30,19 @@ public class GetMailsCommandStrategy implements Command {
 
         Response response = new Response(true);
         try {
-            List<Email> emailsSent = emailRepository.findAllEmailSentByEmail(email);
-            List<Email> emailsReceive = emailRepository.findAllEmailReceiveByEmail(email);
+            List<Email> emailsSent = emailRepository.findAllEmailSentByEmail(email)
+                    .stream()
+                    .map(e -> {
+                        e.setBody("");
+                        return e;
+                    })
+                    .toList();
+            List<Email> emailsReceive = emailRepository.findAllEmailReceiveByEmail(email).stream()
+                    .map(e -> {
+                        e.setBody("");
+                        return e;
+                    })
+                    .toList();
             response.getJSON()
                     .put("emailsSent", new JSONArray(emailsSent).toString())
                     .put("emailsReceive", new JSONArray(emailsReceive).toString());

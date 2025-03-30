@@ -31,4 +31,12 @@ public class Response {
         return res.toString().getBytes();
     }
 
+    @Override
+    public String toString() {
+        return "Response{" +
+                "res=" + res +
+                ", success=" + success +
+                ", message='" + message + '\'' +
+                '}';
+    }
 }
