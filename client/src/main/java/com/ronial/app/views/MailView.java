@@ -131,36 +131,6 @@ public class MailView extends JFrame {
         return item;
     }
 
-//    private JMenuItem createMenuItem(String title, String tooltip) {
-//        JMenuItem item = new JMenuItem(title);
-//        item.setOpaque(true);
-//        item.setBackground(Color.WHITE);
-//        item.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-//        item.setToolTipText(tooltip);
-//        return item;
-//    }
-
-    //    private JPanel createLeftPanel() {
-//        JPanel leftPanel = new JPanel(new BorderLayout());
-//        leftPanel.setPreferredSize(new Dimension(280, 0));
-//        inboxModel = new DefaultListModel<>();
-//        sentModel = new DefaultListModel<>();
-//        emailList = new JList<>(inboxModel);
-//        emailList.addListSelectionListener(e -> displayEmailContent());
-//        JScrollPane emailScrollPane = new JScrollPane(emailList);
-//        emailScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-//        emailScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-//
-//        tabbedPane = new JTabbedPane();
-//        tabbedPane.addTab("Hộp thư đến", null);
-//        tabbedPane.addTab("Hộp thư đi", null);
-//        tabbedPane.addChangeListener(e -> switchEmailList());
-//
-//        leftPanel.add(tabbedPane, BorderLayout.NORTH);
-//        leftPanel.add(emailScrollPane, BorderLayout.CENTER);
-//
-//        return leftPanel;
-//    }
     private JPanel createLeftPanel() {
         JPanel leftPanel = new JPanel(new BorderLayout());
         leftPanel.setPreferredSize(new Dimension(280, 0));

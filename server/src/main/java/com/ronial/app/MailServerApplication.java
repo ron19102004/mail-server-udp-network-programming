@@ -1,5 +1,6 @@
 package com.ronial.app;
 
+import com.formdev.flatlaf.FlatLightLaf;
 import com.ronial.app.conf.db.DatabaseConf;
 import com.ronial.app.conf.db.DatabaseProperty;
 import com.ronial.app.context.ContextProvider;
@@ -12,6 +13,7 @@ import com.ronial.app.security.RSASecurity;
 import com.ronial.app.views.GmailAppPasswordForm;
 import com.ronial.app.views.LogFrame;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 
@@ -27,6 +29,11 @@ public class MailServerApplication {
         }
         if (!logs.exists()) {
             logs.mkdirs();
+        }
+        try {
+            UIManager.setLookAndFeel(new FlatLightLaf()); // Hoặc FlatDarkLaf cho chế độ tối
+        } catch (UnsupportedLookAndFeelException e) {
+            e.printStackTrace();
         }
     }
 

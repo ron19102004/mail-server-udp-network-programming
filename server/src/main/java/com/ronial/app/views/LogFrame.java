@@ -47,7 +47,7 @@ public class LogFrame extends JFrame implements Context {
         ButtonComponent.styleButton(stopButton);
         stopButton.setBackground(new Color(200, 0, 0));
         stopButton.setForeground(Color.WHITE);
-        stopButton.setFont(new Font("Arial", Font.BOLD, 16));
+        stopButton.setFont(new Font("Arial Unicode MS", Font.BOLD, 16));
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
