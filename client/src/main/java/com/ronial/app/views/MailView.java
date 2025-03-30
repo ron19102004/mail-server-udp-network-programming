@@ -168,6 +168,7 @@ public class MailView extends JFrame {
         rightPanel.setBorder(BorderFactory.createTitledBorder("📜 Nội dung thư"));
 
         emailContent = new JEditorPane();
+        emailContent.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
         emailContent.setContentType("text/html");
         emailContent.setEditable(false);
         emailContent.setBackground(new Color(245, 245, 245));
