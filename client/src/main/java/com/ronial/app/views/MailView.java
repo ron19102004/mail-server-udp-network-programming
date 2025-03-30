@@ -5,11 +5,14 @@ import com.ronial.app.mail.MailHtmlFormat;
 import com.ronial.app.mail.MailService;
 import com.ronial.app.models.Email;
 import com.ronial.app.models.User;
+import com.ronial.app.views.utils.OpenBrowserUtils;
 import com.ronial.app.views.utils.Toast;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -22,6 +25,7 @@ public class MailView extends JFrame {
     private List<Email> inboxEmails, sentEmails;
     private final MailService mailService;
     private JTabbedPane tabbedPane;
+    private SwingBrowser swingBrowser;
     public static void launch(User user) {
         new MailView(user);
     }
@@ -49,6 +53,10 @@ public class MailView extends JFrame {
 
         refreshInbox();
         setVisible(true);
+
+        SwingUtilities.invokeLater(() -> {
+            swingBrowser = SwingBrowser.launch();
+        });
     }
     private void createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
@@ -121,6 +129,15 @@ public class MailView extends JFrame {
         emailContent = new JEditorPane();
         emailContent.setContentType("text/html");
         emailContent.setEditable(false);
+        emailContent.addHyperlinkListener(e -> {
+            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+               try {
+                   swingBrowser.open(e.getURL().toString());
+               } catch (NullPointerException ex) {
+                  System.err.println(ex.getMessage());
+               }
+            }
+        });
         JScrollPane contentScrollPane = new JScrollPane(emailContent);
         rightPanel.add(contentScrollPane, BorderLayout.CENTER);
         return rightPanel;

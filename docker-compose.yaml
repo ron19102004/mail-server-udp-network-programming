@@ -13,5 +13,6 @@ services:
       MYSQL_PASSWORD: mailsv
     volumes:
       - mysql-data:/var/lib/mysql
+      - /etc/localtime:/etc/localtime:ro
 volumes:
   mysql-data:

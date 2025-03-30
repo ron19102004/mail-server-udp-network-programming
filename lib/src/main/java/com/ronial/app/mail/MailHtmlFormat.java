@@ -35,7 +35,8 @@ public class MailHtmlFormat {
                 for (String link : links) {
                     html.append("<a href='").append(link)
                             .append("' style='display: inline-block; background: #1e88e5; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; margin: 5px 2px; font-size: 13px;'>")
-                            .append("🔗 ").append(link).append("</a>");
+                            .append("🔗 ").append(link)
+                            .append("</a><br/>");
                 }
                 html.append("</div>");
             }
