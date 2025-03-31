@@ -5,15 +5,33 @@ import com.ronial.app.mail.MailHtmlFormat;
 import com.ronial.app.mail.MailService;
 import com.ronial.app.models.Email;
 import com.ronial.app.models.User;
+import com.ronial.app.utils.StringUtils;
 import com.ronial.app.views.utils.OpenBrowserUtils;
 import com.ronial.app.views.utils.Toast;
+import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.text.Font;
+import javafx.scene.web.WebEngine;
+import javafx.scene.web.WebHistory;
+import javafx.scene.web.WebView;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.text.html.HTMLEditorKit;
 import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,6 +44,7 @@ public class MailView extends JFrame {
     private final MailService mailService;
     private JTabbedPane tabbedPane;
     private final SwingBrowser swingBrowser;
+    private WebEngine webEngine;
 
     public static void launch(User user) {
         new MailView(user);
@@ -46,7 +65,7 @@ public class MailView extends JFrame {
         createMenuBar();
 
         JPanel leftPanel = createLeftPanel();
-        JPanel rightPanel = createRightPanel();
+        JPanel rightPanel = createRightPanelFX();
 
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.CENTER);
@@ -161,14 +180,13 @@ public class MailView extends JFrame {
         return leftPanel;
     }
 
-
     private JPanel createRightPanel() {
         JPanel rightPanel = new JPanel(new BorderLayout(10, 10));
         rightPanel.setBorder(BorderFactory.createTitledBorder("📜 Nội dung thư"));
 
         emailContent = new JEditorPane();
-        emailContent.setEditorKit(JEditorPane.createEditorKitForContentType("text/html"));
-//        emailContent.setContentType("text/html");
+        emailContent.setEditorKit(new HTMLEditorKit());
+        emailContent.setContentType("text/html");
         emailContent.setEditable(false);
         emailContent.setBackground(new Color(245, 245, 245));
         emailContent.addHyperlinkListener(e -> {
@@ -181,13 +199,42 @@ public class MailView extends JFrame {
             }
         });
         JScrollPane contentScrollPane = new JScrollPane(emailContent);
+        contentScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED); // Show vertical scrollbar if needed
         rightPanel.add(contentScrollPane, BorderLayout.CENTER);
+        return rightPanel;
+    }
+
+    private JPanel createRightPanelFX() {
+        JPanel rightPanel = new JPanel(new BorderLayout(10, 10));
+        rightPanel.setBorder(BorderFactory.createTitledBorder("📜 Nội dung thư"));
+
+        JFXPanel fxPanel = new JFXPanel(); // Nhúng JavaFX vào Swing
+        Platform.runLater(() -> {
+            WebView webView = new WebView();
+            webEngine = webView.getEngine();
+            webEngine.setJavaScriptEnabled(true);
+
+//            Path tempFile = null;
+//            try {
+//                tempFile = Files.createTempFile("emoji_page", ".html");
+//                Files.write(tempFile, htmlContent.getBytes(StandardCharsets.UTF_8));
+//                webEngine.load(tempFile.toUri().toString());
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+
+            BorderPane root = new BorderPane();
+            root.setCenter(webView);
+            fxPanel.setScene(new Scene(root));
+        });
+
+        rightPanel.add(fxPanel, BorderLayout.CENTER);
         return rightPanel;
     }
 
     public void refreshInbox() {
         try {
-            emailContent.setText("");
+//            emailContent.setText("");
             mailService.loadMails(this);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -200,7 +247,7 @@ public class MailView extends JFrame {
         } else {
             emailList.setModel(sentModel);
         }
-        emailContent.setText("");
+//        emailContent.setText("");
     }
 
     public Email getEmailFromTabbedPane(int selectedIndex) {
@@ -214,19 +261,36 @@ public class MailView extends JFrame {
     }
 
     public void displayEmailContent(Email email) {
-        emailContent.setText(MailHtmlFormat.toContentHtml(email));
+//        SwingUtilities.invokeLater(() -> {
+//            emailContent.setText(MailHtmlFormat.toContentHtml(email));
+//        });
+        Platform.runLater(() -> {
+            String htmlContent = "<html><head><meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>" +
+                    "<style>body { font-family: 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif; }</style>" +
+                    "</head><body>" +
+                    MailHtmlFormat.toContentHtml(email) +
+                    "</body></html>";
+
+            String base64Content = Base64.getEncoder().encodeToString(htmlContent.getBytes(StandardCharsets.UTF_8));
+            String htmlData = "data:text/html;charset=UTF-8;base64," + base64Content;
+
+            webEngine.load(htmlData);
+        });
     }
 
     private void displayEmailContent() {
         int selectedEmailIndex = emailList.getSelectedIndex();
         if (selectedEmailIndex > -1) {
             Email email = getEmailFromTabbedPane(selectedEmailIndex);
-            emailContent.setText(MailHtmlFormat.toContentHtml(email));
+            displayEmailContent(email);
             new Thread(() -> {
                 try {
+                    Thread.sleep(1000);
                     mailService.readMail(this, email);
                 } catch (IOException e) {
                     System.out.println(e);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
                 }
             }).start();
         }
